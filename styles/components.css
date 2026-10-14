@@ -1,0 +1,244 @@
+/**
+ * ZARA — ZARAFIED STORE
+ * UI Components: Buttons, Badges, Cards & Welcome Card
+ */
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.6rem;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--color-coral);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(241, 123, 112, 0.35);
+}
+
+.btn-primary:hover {
+  background: var(--color-berry);
+  color: #FFFFFF;
+  box-shadow: 0 6px 20px rgba(166, 79, 101, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: var(--color-deep-plum);
+  color: var(--color-warm-cream);
+  box-shadow: 0 4px 14px rgba(68, 36, 56, 0.25);
+}
+
+.btn-secondary:hover {
+  background: var(--color-deep-plum-light);
+  color: #FFFFFF;
+  box-shadow: 0 6px 20px rgba(68, 36, 56, 0.35);
+  transform: translateY(-2px);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--color-deep-plum);
+  border-color: var(--color-deep-plum);
+}
+
+.btn-outline:hover {
+  background: var(--color-deep-plum);
+  color: var(--color-warm-cream);
+  transform: translateY(-2px);
+}
+
+.btn-gold {
+  background: var(--color-gold);
+  color: var(--color-deep-plum-dark);
+  font-weight: 700;
+  box-shadow: var(--shadow-gold);
+}
+
+.btn-gold:hover {
+  background: var(--color-gold-light);
+  color: var(--color-deep-plum);
+  transform: translateY(-2px);
+}
+
+.btn-sm {
+  padding: 0.5rem 1.1rem;
+  font-size: var(--font-size-xs);
+}
+
+.btn-lg {
+  padding: 1rem 2.2rem;
+  font-size: var(--font-size-base);
+}
+
+/* ==========================================================================
+   Badges & Micro-tags
+   ========================================================================== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.badge-plum {
+  background: rgba(68, 36, 56, 0.1);
+  color: var(--color-deep-plum);
+}
+
+.badge-coral {
+  background: var(--color-coral-soft);
+  color: var(--color-berry-dark);
+}
+
+.badge-gold {
+  background: var(--color-gold-soft);
+  color: var(--color-gold-dark);
+  border: 1px solid var(--color-border-gold);
+}
+
+/* ==========================================================================
+   Welcome Card Component (Step 6)
+   - Small, non-blocking dismissible card
+   - Uses actual owner portrait
+   - Positioned in bottom-right viewport corner
+   - Graceful appearance and dismissal
+   ========================================================================== */
+.welcome-card-wrapper {
+  position: fixed;
+  bottom: var(--space-lg);
+  right: var(--space-lg);
+  z-index: var(--z-welcome-card);
+  max-width: min(390px, calc(100vw - 2rem));
+  pointer-events: none; /* Allows clicks outside card to pass through */
+}
+
+.welcome-card {
+  background: #FFFFFF;
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  box-shadow: 0 12px 36px rgba(47, 23, 38, 0.18), 0 0 0 1px rgba(213, 173, 103, 0.35);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  pointer-events: auto; /* Card itself is interactive */
+  position: relative;
+  opacity: 0;
+  transform: translateY(20px) scale(0.96);
+  transition: opacity var(--transition-slow), transform var(--transition-slow);
+}
+
+.welcome-card.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.welcome-card.is-dismissing {
+  opacity: 0;
+  transform: translateY(15px) scale(0.95);
+  pointer-events: none;
+}
+
+.welcome-avatar-frame {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid var(--color-gold);
+  background: var(--color-deep-plum);
+  box-shadow: 0 2px 8px rgba(68, 36, 56, 0.15);
+}
+
+.welcome-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.welcome-text-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.welcome-greeting-title {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-deep-plum);
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.welcome-greeting-copy {
+  font-size: var(--font-size-xs);
+  color: var(--color-muted-text);
+  line-height: 1.4;
+  margin-bottom: var(--space-xs);
+}
+
+.welcome-actions-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.welcome-action-link {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-berry);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.welcome-action-link:hover {
+  color: var(--color-coral);
+}
+
+.welcome-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: rgba(68, 36, 56, 0.06);
+  color: var(--color-muted-text);
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: all var(--transition-fast);
+}
+
+.welcome-close-btn:hover,
+.welcome-close-btn:focus-visible {
+  background: var(--color-deep-plum);
+  color: #FFFFFF;
+}

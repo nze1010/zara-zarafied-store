@@ -1,0 +1,17 @@
+{
+  "name": "ZARA — ZARAFIED STORE",
+  "short_name": "ZARAFIED",
+  "description": "Where African heritage meets modern luxury bespoke fashion and ready-to-wear.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FFF5F0",
+  "theme_color": "#442438",
+  "icons": [
+    {
+      "src": "./ZARA_ASSETS/brand/zara-logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

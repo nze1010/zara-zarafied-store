@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZARA — ZARAFIED STORE | Wear Your Story | Bespoke & Ready-to-Wear African Fashion</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Discover ZARA — ZARAFIED STORE. Handcrafted African bespoke fashion and luxury ready-to-wear designed to celebrate individuality, bold culture, and timeless elegance. Wear your story.">
+  <meta name="keywords" content="ZARA, ZARAFIED, African fashion, bespoke tailoring, ready to wear, Ankara couture, African luxury, Nigerian fashion designer">
+  <meta name="author" content="ZARAFIED STORE">
+  <meta name="theme-color" content="#442438">
+  
+  <!-- Open Graph / Social Sharing -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="ZARA — ZARAFIED STORE | Wear Your Story">
+  <meta property="og:description" content="Handcrafted African bespoke fashion and luxury ready-to-wear designed to celebrate individuality, bold culture, and timeless elegance.">
+  <meta property="og:image" content="./ZARA_ASSETS/brand/zara-logo.png">
+  
+  <!-- Favicon & PWA Manifest -->
+  <link rel="icon" type="image/png" href="./ZARA_ASSETS/brand/zara-logo.png">
+  <link rel="apple-touch-icon" href="./ZARA_ASSETS/brand/zara-logo.png">
+  <link rel="manifest" href="./manifest.webmanifest">
+
+  <!-- Google Fonts Preconnect & Styles -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="./styles/tokens.css">
+  <link rel="stylesheet" href="./styles/base.css">
+  <link rel="stylesheet" href="./styles/layout.css">
+  <link rel="stylesheet" href="./styles/components.css">
+  <link rel="stylesheet" href="./styles/animations.css">
+</head>
+<body>
+
+  <!-- Accessible Skip Navigation Link -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- Top Announcement Bar -->
+  <aside class="announcement-bar" aria-label="Announcement">
+    <div class="container announcement-inner">
+      <span>Bespoke Tailoring & Luxury Ready-to-Wear</span>
+      <span class="announcement-separator" aria-hidden="true">•</span>
+      <span>Worldwide Delivery & Studio Consultations</span>
+      <span class="announcement-separator" aria-hidden="true">•</span>
+      <a href="#contact" class="announcement-highlight">Book a Fitting &rarr;</a>
+    </div>
+  </aside>
+
+  <!-- Sticky Header & Navigation -->
+  <header class="site-header" id="site-header">
+    <div class="container header-inner">
+      <!-- Brand Logo & Identity -->
+      <a href="#" class="brand-link" aria-label="ZARA — ZARAFIED STORE Homepage">
+        <img 
+          src="./ZARA_ASSETS/brand/zara-logo.png" 
+          alt="ZARA — ZARAFIED STORE Brand Logo" 
+          class="brand-logo-img"
+          width="48" 
+          height="48"
+          loading="eager"
+        >
+        <div class="brand-text-group">
+          <span class="brand-title">ZARA</span>
+          <span class="brand-subtitle">ZARAFIED STORE</span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation Menu -->
+      <nav class="nav-desktop" aria-label="Primary navigation">
+        <ul class="nav-desktop-list">
+          <li><a href="#hero" class="nav-link">Home</a></li>
+          <li><a href="#showcase" class="nav-link">Signature Looks</a></li>
+          <li><a href="#collections" class="nav-link">Collections</a></li>
+          <li><a href="#designer-story" class="nav-link">The Designer</a></li>
+          <li><a href="#reviews" class="nav-link">Client Reviews</a></li>
+          <li><a href="#contact" class="nav-link">Contact & Studio</a></li>
+        </ul>
+      </nav>
+
+      <!-- Header Action CTAs & Mobile Toggle -->
+      <div class="header-actions">
+        <a href="#contact" class="btn btn-primary btn-sm">Inquire / Book</a>
+        <button 
+          type="button" 
+          class="menu-toggle" 
+          id="menu-toggle" 
+          aria-expanded="false" 
+          aria-controls="mobile-nav-drawer" 
+          aria-label="Toggle navigation menu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Navigation Drawer & Backdrop -->
+  <div class="mobile-nav-backdrop" id="mobile-nav-backdrop" aria-hidden="true"></div>
+  <div class="mobile-nav-drawer" id="mobile-nav-drawer" role="dialog" aria-modal="true" aria-label="Mobile Navigation">
+    <div>
+      <div class="mobile-nav-header">
+        <div class="brand-text-group">
+          <span class="brand-title">ZARA</span>
+          <span class="brand-subtitle">ZARAFIED STORE</span>
+        </div>
+        <button type="button" class="mobile-close-btn" id="mobile-close-btn" aria-label="Close navigation menu">
+          &times;
+        </button>
+      </div>
+
+      <nav aria-label="Mobile navigation">
+        <ul class="mobile-nav-list">
+          <li><a href="#hero" class="mobile-nav-link">Home</a></li>
+          <li><a href="#showcase" class="mobile-nav-link">Signature Looks</a></li>
+          <li><a href="#collections" class="mobile-nav-link">Ready-to-Wear vs Bespoke</a></li>
+          <li><a href="#designer-story" class="mobile-nav-link">The Designer Story</a></li>
+          <li><a href="#reviews" class="mobile-nav-link">Client Reviews</a></li>
+          <li><a href="#contact" class="mobile-nav-link">Contact & Atelier</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="mobile-nav-footer">
+      <a href="#contact" class="btn btn-primary btn-lg" style="width: 100%;">Book Custom Fitting</a>
+      <p style="margin-top: 1rem; font-size: 0.8rem; text-align: center; color: var(--color-subtle-text);">
+        ZARAFIED STORE &copy; 2026
+      </p>
+    </div>
+  </div>
+
+  <!-- Main Content Landmark -->
+  <main id="main-content">
+
+    <!-- ======================================================================
+         SECTION 1: OWNER-LED HERO
+         ====================================================================== -->
+    <section class="hero-section" id="hero" aria-labelledby="hero-title">
+      <div class="container hero-grid">
+        <!-- Hero Text & CTAs -->
+        <div class="hero-content">
+          <div class="hero-tagline-wrapper">
+            <span class="badge badge-gold">Artisanal African Luxury</span>
+            <span class="badge badge-coral">Bespoke &amp; Ready-to-Wear</span>
+          </div>
+
+          <h1 class="hero-headline" id="hero-title">
+            Wear your <span class="highlight-word">story.</span>
+          </h1>
+
+          <p class="hero-description">
+            Where African heritage meets modern luxury tailoring. Every garment is crafted to celebrate your individuality, commanding attention with rich colour, authentic textiles, and sculpted silhouettes.
+          </p>
+
+          <div class="hero-ctas">
+            <a href="#collections" class="btn btn-primary btn-lg">Explore Collections</a>
+            <a href="#designer-story" class="btn btn-outline btn-lg">The Designer Story</a>
+          </div>
+
+          <!-- Feature Pillars -->
+          <div class="hero-pillars">
+            <div class="hero-pillar-item">
+              <span class="hero-pillar-title">100%</span>
+              <span class="hero-pillar-sub">Custom Made-to-Measure</span>
+            </div>
+            <div class="hero-pillar-item">
+              <span class="hero-pillar-title">Authentic</span>
+              <span class="hero-pillar-sub">Vibrant Ankara &amp; Silks</span>
+            </div>
+            <div class="hero-pillar-item">
+              <span class="hero-pillar-title">Worldwide</span>
+              <span class="hero-pillar-sub">Tracked Delivery</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero Owner Portrait -->
+        <div class="hero-visual">
+          <div class="hero-image-frame">
+            <img 
+              src="./ZARA_ASSETS/owner/owner-portrait-red-dress.png" 
+              alt="Creative Director and founder of ZARAFIED STORE in a striking bespoke crimson gown" 
+              class="hero-portrait-img"
+              width="600" 
+              height="750"
+              loading="eager"
+            >
+            <div class="hero-portrait-badge">
+              <div>
+                <div class="badge-owner-title">Lead Designer</div>
+                <div class="badge-owner-role">Creative Director &bull; ZARAFIED</div>
+              </div>
+              <span class="badge badge-gold">Founder</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SECTION 2: SIGNATURE FASHION SLIDESHOW
+         ====================================================================== -->
+    <section class="section-wrapper slideshow-section" id="showcase" aria-labelledby="showcase-title">
+      <div class="container">
+        <div class="section-header reveal-on-scroll">
+          <span class="section-tag">Fashion Showcase</span>
+          <h2 id="showcase-title">Signature Creations</h2>
+          <p class="section-subtitle">
+            Explore our curated showcase of sculptural African silhouettes, vibrant print harmony, and masterfully tailored ensembles.
+          </p>
+        </div>
+
+        <!-- Slideshow Component -->
+        <div class="slideshow-wrapper reveal-on-scroll" id="fashion-slideshow" role="region" aria-roledescription="carousel" aria-label="Fashion Showcase Carousel">
+          <div class="slides-viewport">
+            <div class="slides-track" id="slides-track">
+              <!-- Slide 1: Signature Ankara -->
+              <article class="slide-item" role="group" aria-roledescription="slide" aria-label="1 of 3">
+                <div class="slide-media">
+                  <img 
+                    src="./ZARA_ASSETS/fashion/signature-fashion-01-ankara.png" 
+                    alt="Signature Ankara tailored fashion piece featuring vibrant geometric African patterns and sculpted peplum silhouette" 
+                    class="slide-img"
+                    loading="lazy"
+                    width="825"
+                    height="1052"
+                  >
+                </div>
+                <div class="slide-content">
+                  <span class="slide-category">Signature Heritage</span>
+                  <h3 class="slide-title">The Heritage Ankara Silhouette</h3>
+                  <p class="slide-description">
+                    A masterclass in modern African dressmaking. Bold traditional wax prints structured with sharp, architectural lines and tailored for the woman who owns every room.
+                  </p>
+                  <div>
+                    <a href="#contact" class="btn btn-gold btn-sm">Inquire About This Style</a>
+                  </div>
+                </div>
+              </article>
+
+              <!-- Slide 2: Paired Looks -->
+              <article class="slide-item" role="group" aria-roledescription="slide" aria-label="2 of 3" aria-hidden="true">
+                <div class="slide-media">
+                  <img 
+                    src="./ZARA_ASSETS/fashion/signature-fashion-02-paired-looks.png" 
+                    alt="Paired fashion look featuring elegant coordinated African print sets with tailored trousers and contemporary cuts" 
+                    class="slide-img"
+                    loading="lazy"
+                    width="766"
+                    height="1280"
+                  >
+                </div>
+                <div class="slide-content">
+                  <span class="slide-category">Coordinated Couture</span>
+                  <h3 class="slide-title">Paired Elegance &amp; Contemporary Sets</h3>
+                  <p class="slide-description">
+                    Versatile styling tailored for modern transitions. Designed as matching statements that move effortlessly from daylight ceremonies to evening celebrations.
+                  </p>
+                  <div>
+                    <a href="#contact" class="btn btn-gold btn-sm">Inquire About This Style</a>
+                  </div>
+                </div>
+              </article>
+
+              <!-- Slide 3: Colourful Dress -->
+              <article class="slide-item" role="group" aria-roledescription="slide" aria-label="3 of 3" aria-hidden="true">
+                <div class="slide-media">
+                  <img 
+                    src="./ZARA_ASSETS/fashion/signature-fashion-03-colourful-dress.png" 
+                    alt="Colourful African gown with flowing floral brilliance and exquisite draping" 
+                    class="slide-img"
+                    loading="lazy"
+                    width="828"
+                    height="1090"
+                  >
+                </div>
+                <div class="slide-content">
+                  <span class="slide-category">Occasion Statement</span>
+                  <h3 class="slide-title">Radiant Flora &amp; Flowing Brilliance</h3>
+                  <p class="slide-description">
+                    An exuberant celebration of color and feminine poise. Crafted with radiant drapery and breathable luxury fabrics to ensure fluid movement and head-turning impact.
+                  </p>
+                  <div>
+                    <a href="#contact" class="btn btn-gold btn-sm">Inquire About This Style</a>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <!-- Slideshow Controls Bar -->
+          <div class="slideshow-controls-bar">
+            <!-- Previous & Next Navigation Buttons -->
+            <div class="slideshow-nav-btns">
+              <button type="button" class="slideshow-arrow" id="slide-prev" aria-label="Previous slide">
+                &#10094;
+              </button>
+              <button type="button" class="slideshow-arrow" id="slide-next" aria-label="Next slide">
+                &#10095;
+              </button>
+            </div>
+
+            <!-- Slide Pagination Dots -->
+            <div class="slideshow-dots" role="tablist" aria-label="Slideshow pagination">
+              <button type="button" class="slideshow-dot" role="tab" aria-selected="true" aria-label="Slide 1: Heritage Ankara" tabindex="0"></button>
+              <button type="button" class="slideshow-dot" role="tab" aria-selected="false" aria-label="Slide 2: Paired Elegance" tabindex="-1"></button>
+              <button type="button" class="slideshow-dot" role="tab" aria-selected="false" aria-label="Slide 3: Radiant Flora" tabindex="-1"></button>
+            </div>
+
+            <!-- Accessible Slide Counter -->
+            <span class="slide-counter" id="slide-counter" aria-live="polite">Look 1 of 3</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SECTION 3: FEATURED COLLECTIONS PREVIEW (RTW vs CUSTOM DESIGNS)
+         ====================================================================== -->
+    <section class="section-wrapper collections-section" id="collections" aria-labelledby="collections-title">
+      <div class="container">
+        <div class="section-header reveal-on-scroll">
+          <span class="section-tag">Two Expressions of Luxury</span>
+          <h2 id="collections-title">Ready-to-Wear &amp; Custom Atelier</h2>
+          <p class="section-subtitle">
+            Whether you desire immediate elegance from our seasonal drops or a bespoke one-of-a-kind couture piece crafted to your exact measurements, ZARAFIED offers an exquisite sartorial experience.
+          </p>
+        </div>
+
+        <div class="collections-grid">
+          <!-- Pillar 1: Ready-to-Wear (RTW) -->
+          <article class="collection-card rtw reveal-on-scroll">
+            <div>
+              <span class="card-badge badge-rtw">Seasonal Drops • Immediate Delivery</span>
+              <h3 class="card-title">Ready-to-Wear (RTW)</h3>
+              <p class="card-desc">
+                Effortless luxury tailored for contemporary living. Signature African prints and modern silhouettes cut to standard sizing, ready to wear straight out of the box.
+              </p>
+
+              <div class="card-features-list">
+                <div class="feature-item">
+                  <span class="feature-icon">&#10003;</span>
+                  <span>Curated seasonal collections &amp; coordinated sets</span>
+                </div>
+                <div class="feature-item">
+                  <span class="feature-icon">&#10003;</span>
+                  <span>Premium breathable cottons &amp; authentic wax prints</span>
+                </div>
+                <div class="feature-item">
+                  <span class="feature-icon">&#10003;</span>
+                  <span>Inclusive standard sizing from UK 8 to UK 22</span>
+                </div>
+                <div class="feature-item">
+                  <span class="feature-icon">&#10003;</span>
+                  <span>Fast express delivery with tracked shipping worldwide</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="card-status-note">
+                <strong>Dynamic Catalogue Notice:</strong> The RTW product catalogue will be dynamically synchronized and managed via our secure cloud portal in upcoming releases.
+              </div>
+              <a href="#contact" class="btn btn-secondary" style="width: 100%;">Join RTW Priority Waitlist</a>
+            </div>
+          </article>
+
+          <!-- Pillar 2: Custom Designs (Bespoke Atelier) -->
+          <article class="collection-card bespoke reveal-on-scroll">
+            <div>
+              <span class="card-badge badge-bespoke">Made-to-Measure • One-of-a-Kind</span>
+              <h3 class="card-title">Bespoke &amp; Couture Atelier</h3>
+              <p class="card-desc">
+                Your personal vision transformed into wearable art. Our made-to-measure service involves individual consultations, personal measurement mapping, and bespoke hand-finishing.
+              </p>
+
+              <div class="card-features-list">
+                <div class="feature-item">
+                  <span class="feature-icon">&#10003;</span>
+                  <span>Personal consultation with the lead designer (in-studio or virtual)</span>
+                </div>
+                <div class="feature-item">
+                  <span class="feature-icon">&#10003;</span>
+                  <span>Custom body mapping &amp; personalized toile fittings</span>
+                </div>
+                <div class="feature-item">
+                  <span class="feature-icon">&#10003;</span>
+                  <span>Bridal, red-carpet, gala &amp; milestone celebrations</span>
+                </div>
+                <div class="feature-item">
+                  <span class="feature-icon">&#10003;</span>
+                  <span>Exclusive hand-beading, structural corsetry &amp; custom textiles</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="card-status-note">
+                <strong>Fitting Availability:</strong> Private bespoke appointments are open by direct consultation request.
+              </div>
+              <a href="#contact" class="btn btn-primary" style="width: 100%;">Book Custom Consultation</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SECTION 4: DESIGNER STORY PREVIEW
+         ====================================================================== -->
+    <section class="section-wrapper story-section" id="designer-story" aria-labelledby="story-title">
+      <div class="container story-grid">
+        <!-- Visual Reference Collage (Step 4 & README compliant) -->
+        <div class="story-visual reveal-on-scroll">
+          <div class="story-visual-frame">
+            <img 
+              src="./ZARA_ASSETS/owner/owner-outfit-reference-collage.png" 
+              alt="Designer and founder outfit reference collage illustrating versatility, creative studio process, and styling range" 
+              class="story-collage-img"
+              width="960" 
+              height="1280"
+              loading="lazy"
+            >
+          </div>
+        </div>
+
+        <!-- Narrative & Philosophy -->
+        <div class="story-content reveal-on-scroll">
+          <span class="section-tag">Behind the Label</span>
+          <h2 id="story-title">The Creative Vision Behind ZARAFIED</h2>
+
+          <div class="story-quote-card">
+            <p class="story-quote-text">
+              &ldquo;When you wear ZARAFIED, you don't just put on an outfit — you wear your story. You wear pride, craftsmanship, and the quiet power of knowing who you are.&rdquo;
+            </p>
+            <span class="story-quote-author">&mdash; Founder &amp; Creative Director</span>
+          </div>
+
+          <p>
+            ZARA — ZARAFIED STORE was born from an unwavering passion to elevate African textiles into modern, high-fashion silhouettes. Our founder envisions clothing not merely as attire, but as a wearable chronicle of confidence, celebration, and heritage.
+          </p>
+
+          <p>
+            Every piece emerging from our atelier marries traditional wax prints and rich color palettes with precise structural tailoring. From sharp modern coordinates to sweeping floor-length couture gowns, our work honors the diverse essence of women around the globe.
+          </p>
+
+          <div style="margin-top: var(--space-xl);">
+            <a href="#contact" class="btn btn-secondary">Inquire with the Designer</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SECTION 5: CUSTOMER REVIEW SECTION PLACEHOLDER
+         (Without fabricated testimonials - Step 5 item 6)
+         ====================================================================== -->
+    <section class="section-wrapper reviews-section" id="reviews" aria-labelledby="reviews-title">
+      <div class="container">
+        <div class="section-header reveal-on-scroll">
+          <span class="section-tag">Client Experiences</span>
+          <h2 id="reviews-title">Client Stories &amp; Verified Reviews</h2>
+          <p class="section-subtitle">
+            Authenticity and customer trust are at the heart of our atelier. Read about our verified review policy and atelier guarantees.
+          </p>
+        </div>
+
+        <!-- Authentic Placeholder (No fake reviews) -->
+        <div class="reviews-placeholder-box reveal-on-scroll">
+          <div class="reviews-placeholder-icon" aria-hidden="true">
+            &#9733;
+          </div>
+          <h3 style="font-size: var(--font-size-xl); margin-bottom: var(--space-sm);">
+            Verified Client Reviews Arriving with Our Next Drop
+          </h3>
+          <p style="max-width: 640px; margin: 0 auto var(--space-lg); line-height: 1.7;">
+            We believe in radical transparency. In accordance with our store standard, we do not publish fabricated testimonials. Verified client reviews, event photographs, and fit ratings from our upcoming order releases will be published directly here through Cloud Firestore.
+          </p>
+          <div style="display: inline-flex; gap: var(--space-md); flex-wrap: wrap; justify-content: center;">
+            <a href="#contact" class="btn btn-outline btn-sm">Share Your Bespoke Experience</a>
+            <a href="#contact" class="btn btn-primary btn-sm">Schedule a Fitting</a>
+          </div>
+        </div>
+
+        <!-- Atelier Quality Guarantees -->
+        <div class="reviews-guarantees-grid reveal-on-scroll">
+          <div class="guarantee-card">
+            <span class="badge badge-gold">Guarantee</span>
+            <h4>Bespoke Fit Promise</h4>
+            <p>Every made-to-measure piece comes with our fitting guarantee to ensure your garment flatters effortlessly.</p>
+          </div>
+          <div class="guarantee-card">
+            <span class="badge badge-gold">Authenticity</span>
+            <h4>Original African Textiles</h4>
+            <p>We source authentic African wax prints, silks, and luxury textiles with rich color fastness.</p>
+          </div>
+          <div class="guarantee-card">
+            <span class="badge badge-gold">Transparency</span>
+            <h4>Verified Client Feedback</h4>
+            <p>Every published testimonial represents a verified client order with genuine styling feedback.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SECTION 6: CONTACT & ATELIER INQUIRY
+         ====================================================================== -->
+    <section class="section-wrapper" id="contact" style="background: var(--color-bg-primary); border-top: 1px solid var(--color-border);" aria-labelledby="contact-title">
+      <div class="container reveal-on-scroll">
+        <div class="section-header">
+          <span class="section-tag">Direct Atelier Connection</span>
+          <h2 id="contact-title">Connect with ZARAFIED</h2>
+          <p class="section-subtitle">
+            Whether inquiring about bespoke bridal commissions, custom measurements, or priority access to our upcoming ready-to-wear drop, our studio team is here to assist you.
+          </p>
+        </div>
+
+        <div style="max-width: 680px; margin: 0 auto; background: #FFFFFF; padding: var(--space-2xl); border-radius: var(--radius-xl); border: 1px solid var(--color-border); box-shadow: var(--shadow-md);">
+          <div style="display: flex; flex-direction: column; gap: var(--space-md);">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <span style="font-size: 1.5rem; color: var(--color-gold);">&#9993;</span>
+              <div>
+                <strong>Atelier Inquiries:</strong>
+                <p style="margin: 0; color: var(--color-berry); font-weight: 600;">contact@zarafiedstore.com</p>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <span style="font-size: 1.5rem; color: var(--color-coral);">&#9742;</span>
+              <div>
+                <strong>Studio Concierge &amp; WhatsApp:</strong>
+                <p style="margin: 0; color: var(--color-muted-text);">+234 (0) Atelier Consultation Line</p>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <span style="font-size: 1.5rem; color: var(--color-berry);">&#9873;</span>
+              <div>
+                <strong>Bespoke Fittings:</strong>
+                <p style="margin: 0; color: var(--color-muted-text);">In-studio and virtual appointments worldwide</p>
+              </div>
+            </div>
+
+            <div style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--color-border-subtle); text-align: center;">
+              <p style="font-size: var(--font-size-xs); color: var(--color-subtle-text);">
+                Layer 1 Project Foundation: Booking system, dynamic order tracking and Firestore messaging will be connected in subsequent layers.
+              </p>
+              <a href="mailto:contact@zarafiedstore.com" class="btn btn-primary" style="margin-top: var(--space-xs);">Send Atelier Email</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================================================================
+       FOOTER
+       ====================================================================== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <!-- Col 1: Brand & Bio -->
+        <div class="footer-col">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <img 
+              src="./ZARA_ASSETS/brand/zara-logo.png" 
+              alt="ZARA Logo" 
+              width="40" 
+              height="40" 
+              style="border-radius: var(--radius-sm); background: #FFFFFF; padding: 2px;"
+            >
+            <span class="footer-brand-title">ZARA &mdash; ZARAFIED</span>
+          </div>
+          <p class="footer-tagline">
+            Wear your story. Celebrating African luxury, bespoke couture craftsmanship, and vibrant ready-to-wear fashion.
+          </p>
+          <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+            <span class="badge badge-gold">Bespoke Atelier</span>
+            <span class="badge badge-coral">Ready-to-Wear</span>
+          </div>
+        </div>
+
+        <!-- Col 2: Navigation -->
+        <div class="footer-col">
+          <h4 class="footer-heading">Collections</h4>
+          <ul class="footer-links-list">
+            <li><a href="#showcase" class="footer-link">Signature Showcase</a></li>
+            <li><a href="#collections" class="footer-link">Ready-to-Wear Drops</a></li>
+            <li><a href="#collections" class="footer-link">Bespoke Couture Atelier</a></li>
+            <li><a href="#designer-story" class="footer-link">Designer Story</a></li>
+            <li><a href="#reviews" class="footer-link">Verified Reviews</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Atelier Services -->
+        <div class="footer-col">
+          <h4 class="footer-heading">Atelier Services</h4>
+          <ul class="footer-links-list">
+            <li><a href="#contact" class="footer-link">Private Fitting Consultation</a></li>
+            <li><a href="#contact" class="footer-link">Custom Body Measurements</a></li>
+            <li><a href="#contact" class="footer-link">Bridal &amp; Gala Inquiries</a></li>
+            <li><a href="#contact" class="footer-link">Worldwide Tracked Shipping</a></li>
+            <li><a href="#contact" class="footer-link">Garment Care &amp; Longevity</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Contact & Social Placeholders -->
+        <div class="footer-col">
+          <h4 class="footer-heading">Contact &amp; Studio</h4>
+          <ul class="footer-links-list">
+            <li class="footer-contact-item">
+              <span>&#9993;</span>
+              <span>contact@zarafiedstore.com</span>
+            </li>
+            <li class="footer-contact-item">
+              <span>&#9873;</span>
+              <span>Lagos &bull; London &bull; Worldwide Delivery</span>
+            </li>
+            <li class="footer-contact-item">
+              <span>&#9200;</span>
+              <span>Consultations: Mon &ndash; Sat (By Appointment)</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Footer Bottom -->
+      <div class="footer-bottom">
+        <div>
+          &copy; 2026 ZARA — ZARAFIED STORE. All rights reserved.
+        </div>
+        <div>
+          <span>Layer 1 Foundation &bull; HTML5 &bull; CSS3 &bull; ES Modules</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ======================================================================
+       STEP 6: WELCOME CARD
+       - Small, non-blocking dismissible card
+       - Displays actual owner portrait
+       - At most once per browsing session (sessionStorage)
+       - Accessible close button & reduced-motion friendly
+       ====================================================================== -->
+  <aside 
+    class="welcome-card-wrapper" 
+    aria-label="Welcome notice from the designer"
+  >
+    <div 
+      class="welcome-card" 
+      id="welcome-card" 
+      role="status" 
+      aria-live="polite"
+    >
+      <!-- Owner Portrait Thumbnail -->
+      <div class="welcome-avatar-frame">
+        <img 
+          src="./ZARA_ASSETS/owner/owner-portrait-red-dress.png" 
+          alt="Owner and Creative Director of ZARAFIED" 
+          class="welcome-avatar-img"
+          width="64"
+          height="64"
+        >
+      </div>
+
+      <!-- Welcome Message & Actions -->
+      <div class="welcome-text-content">
+        <div class="welcome-greeting-title">Welcome to ZARAFIED</div>
+        <p class="welcome-greeting-copy">
+          I'm delighted you're here. Discover our signature looks or inquire about your custom fitting.
+        </p>
+        <div class="welcome-actions-row">
+          <a href="#showcase" class="welcome-action-link">Explore Looks &rarr;</a>
+          <a href="#contact" class="welcome-action-link">Book Fitting &rarr;</a>
+        </div>
+      </div>
+
+      <!-- Accessible Dismiss Button -->
+      <button 
+        type="button" 
+        class="welcome-close-btn" 
+        id="welcome-close-btn" 
+        aria-label="Dismiss welcome message"
+      >
+        &times;
+      </button>
+    </div>
+  </aside>
+
+  <!-- ES Modules Entry Point -->
+  <script type="module" src="./scripts/main.js"></script>
+
+</body>
+</html>

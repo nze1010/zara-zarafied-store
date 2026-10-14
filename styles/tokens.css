@@ -1,0 +1,106 @@
+/**
+ * ZARA — ZARAFIED STORE
+ * Design Tokens & Brand Variables
+ * Approved Brand Palette & Typography
+ */
+
+:root {
+  /* Approved Brand Color Palette */
+  --color-warm-cream: #FFF5F0;
+  --color-deep-plum: #442438;
+  --color-deep-plum-dark: #2F1726;
+  --color-deep-plum-light: #5A324C;
+  --color-berry: #A64F65;
+  --color-berry-light: #BE627B;
+  --color-berry-dark: #873B4E;
+  --color-coral: #F17B70;
+  --color-coral-light: #F69D95;
+  --color-coral-soft: #FDE8E5;
+  --color-gold: #D5AD67;
+  --color-gold-light: #E4C58B;
+  --color-gold-dark: #B98E45;
+  --color-gold-soft: #FAF3E5;
+  --color-dark-text: #252128;
+  --color-muted-text: #5C525A;
+  --color-subtle-text: #827680;
+
+  /* Surface & Background Colors */
+  --color-bg-primary: #FFF5F0;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-surface-elevated: #FFFFFF;
+  --color-bg-plum-tint: rgba(68, 36, 56, 0.04);
+  --color-bg-coral-tint: rgba(241, 123, 112, 0.08);
+  --color-bg-gold-tint: rgba(213, 173, 103, 0.1);
+
+  /* Borders & Dividers */
+  --color-border: rgba(68, 36, 56, 0.12);
+  --color-border-subtle: rgba(68, 36, 56, 0.06);
+  --color-border-gold: rgba(213, 173, 103, 0.35);
+
+  /* Gradients */
+  --gradient-hero: linear-gradient(135deg, rgba(68, 36, 56, 0.95) 0%, rgba(166, 79, 101, 0.92) 50%, rgba(68, 36, 56, 0.98) 100%);
+  --gradient-gold: linear-gradient(135deg, #D5AD67 0%, #F5DFB0 50%, #B98E45 100%);
+  --gradient-sunset: linear-gradient(135deg, #F17B70 0%, #A64F65 100%);
+  --gradient-overlay: linear-gradient(180deg, rgba(37, 33, 40, 0) 30%, rgba(37, 33, 40, 0.85) 100%);
+  --gradient-surface: linear-gradient(180deg, #FFFFFF 0%, #FFF5F0 100%);
+
+  /* Typography */
+  --font-serif: 'Playfair Display', Cormorant Garamond, Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  --font-size-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.8125rem);
+  --font-size-sm: clamp(0.875rem, 0.825rem + 0.25vw, 0.9375rem);
+  --font-size-base: clamp(1rem, 0.95rem + 0.25vw, 1.0625rem);
+  --font-size-md: clamp(1.125rem, 1.05rem + 0.35vw, 1.25rem);
+  --font-size-lg: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+  --font-size-xl: clamp(1.5rem, 1.35rem + 0.75vw, 1.875rem);
+  --font-size-2xl: clamp(1.875rem, 1.6rem + 1.25vw, 2.5rem);
+  --font-size-3xl: clamp(2.25rem, 1.9rem + 1.75vw, 3.25rem);
+  --font-size-hero: clamp(2.75rem, 2.2rem + 2.75vw, 4.5rem);
+
+  /* Spacing */
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4.5rem;
+  --space-4xl: 6rem;
+
+  /* Layout */
+  --container-max-width: 1240px;
+  --container-padding: clamp(1rem, 0.5rem + 2vw, 2.5rem);
+  --header-height: 80px;
+  --announcement-height: 40px;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(68, 36, 56, 0.06);
+  --shadow-md: 0 8px 24px rgba(68, 36, 56, 0.08);
+  --shadow-lg: 0 16px 36px rgba(68, 36, 56, 0.12);
+  --shadow-gold: 0 8px 25px rgba(213, 173, 103, 0.25);
+  --shadow-plum: 0 12px 32px rgba(68, 36, 56, 0.2);
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-luxury: 600ms cubic-bezier(0.25, 1, 0.5, 1);
+
+  /* Z-Index Hierarchy */
+  --z-base: 1;
+  --z-nav: 100;
+  --z-header: 200;
+  --z-dropdown: 300;
+  --z-modal-backdrop: 900;
+  --z-welcome-card: 1000;
+  --z-skip-link: 2000;
+}
