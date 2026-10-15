@@ -1,19 +1,19 @@
 /**
  * ZARA — ZARAFIED STORE
  * Firebase Web Environment Configuration Template
+ * Project ID: zarastore-17250
  * 
  * INSTRUCTIONS:
- * 1. When your Firebase project is created, copy this file to: scripts/firebase-env.js
- * 2. Fill in your public web app credentials from the Firebase Console:
- *    (Project Settings > General > Your apps > Web app)
- * 3. Never commit `scripts/firebase-env.js` to Git (it is ignored in .gitignore).
+ * 1. To customize or override local configuration, copy this file to: scripts/firebase-env.js
+ * 2. `scripts/firebase-env.js` is ignored by Git (.gitignore) to keep environment configs separated.
  */
 
 export const firebaseEnvConfig = {
-  apiKey: "YOUR_API_KEY_HERE",
-  authDomain: "zara-zarafied-store.firebaseapp.com",
-  projectId: "zara-zarafied-store",
-  storageBucket: "zara-zarafied-store.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyA3nWHKhOyTMhTlFGtmdytEDcQ0OERUW2A",
+  authDomain: "zarastore-17250.firebaseapp.com",
+  projectId: "zarastore-17250",
+  storageBucket: "zarastore-17250.firebasestorage.app",
+  messagingSenderId: "370409615096",
+  appId: "1:370409615096:web:620bbc0b6277358b02150d",
+  measurementId: "G-FZH58SFTX3"
 };

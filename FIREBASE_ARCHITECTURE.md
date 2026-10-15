@@ -5,6 +5,21 @@ This document establishes the official database schema, security access model, m
 
 ---
 
+## 0. Project Identity & Cloud Resources
+
+| Resource | Setting / Value | Status |
+|---|---|---|
+| **Firebase Project Display Name** | `zarastore` | Active |
+| **Firebase Project ID** | `zarastore-17250` | Active |
+| **Project Number** | `370409615096` | Active |
+| **Registered Web App** | `zarafiedstore` (`1:370409615096:web:620bbc0b6277358b02150d`) | Active & Integrated |
+| **Preferred Hosting Site** | `zarafiedstore` (`https://zarafiedstore.web.app`) | Reserved & Created |
+| **Cloud Firestore** | Collections: `products`, `portfolio`, `orders`, `customEnquiries`, `reviews`, `siteSettings` | Rules Prepared; Awaiting Console Location Selection |
+| **Firebase Storage** | Bucket: `zarastore-17250.firebasestorage.app` | Rules Prepared; Awaiting Console Activation |
+| **Firebase Authentication** | Provider: Email/Password (Admin: `Janetzara97@gmail.com`) | Awaiting Console Activation |
+
+---
+
 ## 1. Cloud Firestore Data Architecture
 
 Cloud Firestore is organized around six core logical collections designed with strict type validation, document identifier conventions, and audit timestamps.
@@ -128,7 +143,7 @@ Cloud Firestore is organized around six core logical collections designed with s
 Media is partitioned into dedicated namespaces with size restrictions (5MB max) and MIME type validation (`image/*`).
 
 ```
-gs://zara-zarafied-store.appspot.com/
+gs://zarastore-17250.firebasestorage.app/
 ├── products/
 │   └── {productId}/
 │       ├── primary.webp
@@ -212,3 +227,57 @@ The frontend architecture in `scripts/firebase-config.js` is isolated and design
 - The homepage loads 100% reliably using the verified local brand assets and HTML shell.
 - No uncaught JavaScript exceptions or blank pages occur.
 - When valid credentials are provided in `scripts/firebase-env.js`, the modular SDK seamlessly activates without requiring application code changes.
+
+---
+
+## 6. Local Setup, Testing & Deployment Reference
+
+### 6.1 Local Development Preview
+```bash
+# Serve static files locally
+python -m http.server 8085
+# or
+npx serve .
+```
+
+### 6.2 Firebase Local Emulator Suite
+Test Firestore and Storage security rules locally without affecting production data:
+```bash
+npx firebase-tools emulators:start --only firestore,storage,hosting,auth
+```
+- Emulator UI: `http://localhost:4000`
+- Firestore Emulator: `localhost:8080`
+- Storage Emulator: `localhost:9199`
+- Hosting Emulator: `localhost:5000`
+
+### 6.3 Security Rules Deployment
+To deploy only the security rules to `zarastore-17250`:
+```bash
+npx firebase-tools deploy --only firestore:rules,storage --project zarastore-17250
+```
+
+### 6.4 Production Hosting Deployment (Layer 2 Review Only — Do Not Run Yet)
+When production deployment is approved:
+```bash
+npx firebase-tools deploy --only hosting:zarafiedstore --project zarastore-17250
+```
+Public URL: `https://zarafiedstore.web.app`
+
+---
+
+## 7. Remaining Manual Firebase Console Actions
+
+1. **Cloud Firestore Provisioning:**
+   - Go to [Firebase Console](https://console.firebase.google.com/project/zarastore-17250/firestore) -> Build -> Firestore Database -> Create database.
+   - Recommended Location: `europe-west1` (Belgium) or `europe-west2` (London) for optimal latency to Nigeria and West Africa.
+   - Security Rules: Start in production mode (our repository `firestore.rules` will govern access).
+2. **Firebase Storage Activation:**
+   - Go to [Firebase Console](https://console.firebase.google.com/project/zarastore-17250/storage) -> Build -> Storage -> Get started.
+   - Location: Align with Firestore region (`europe-west1` or `eur3`).
+3. **Firebase Authentication Provider:**
+   - Go to [Firebase Console](https://console.firebase.google.com/project/zarastore-17250/authentication) -> Build -> Authentication -> Get started.
+   - Enable **Email/Password** sign-in method.
+   - Create initial administrator account for `Janetzara97@gmail.com`.
+4. **Grant Custom Admin Claim:**
+   - Run the custom claim provisioning script in a secure private Node.js environment to assign `{ admin: true }` to `Janetzara97@gmail.com`.
+

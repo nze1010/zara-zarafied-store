@@ -3,6 +3,13 @@ scripts/firebase-env.js
 *.local
 .env
 .env.*
+*service-account*.json
+*service_account*.json
+*credentials*.json
+*.pem
+*.key
+*.p12
+*.secret
 
 # Firebase CLI & Emulators
 .firebase/
