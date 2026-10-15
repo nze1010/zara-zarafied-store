@@ -23,6 +23,8 @@
   --color-dark-text: #252128;
   --color-muted-text: #5C525A;
   --color-subtle-text: #827680;
+  --color-whatsapp: #25D366;
+  --color-whatsapp-dark: #1EBE5B;
 
   /* Surface & Background Colors */
   --color-bg-primary: #FFF5F0;
@@ -70,10 +72,9 @@
   --space-4xl: 6rem;
 
   /* Layout */
-  --container-max-width: 1240px;
+  --container-max-width: 1200px;
   --container-padding: clamp(1rem, 0.5rem + 2vw, 2.5rem);
-  --header-height: 80px;
-  --announcement-height: 40px;
+  --header-height: 76px;
 
   /* Shadows */
   --shadow-sm: 0 2px 8px rgba(68, 36, 56, 0.06);

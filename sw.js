@@ -1,9 +1,9 @@
 /**
  * ZARA — ZARAFIED STORE
- * Lightweight PWA Service Worker (Layer 1 Foundation)
+ * Lightweight PWA Service Worker
  */
 
-const CACHE_NAME = 'zarafied-v1';
+const CACHE_NAME = 'zarafied-v2';
 const CORE_ASSETS = [
   './',
   './index.html',

@@ -1,7 +1,11 @@
 /**
  * ZARA — ZARAFIED STORE
  * Fashion Showcase Slideshow Module
- * Handles manual previous/next navigation, slide indicators, keyboard & touch
+ * - Automatic rotation every 4.5 seconds
+ * - Pauses on hover, focus, and touch interaction
+ * - Manual previous/next buttons and pagination dots
+ * - Respects prefers-reduced-motion preferences
+ * - Keyboard (left/right arrows) and mobile swipe support
  */
 
 export function initSlideshow() {
@@ -19,9 +23,15 @@ export function initSlideshow() {
 
   let currentIndex = 0;
   const totalSlides = slides.length;
+  const AUTO_PLAY_INTERVAL = 4500; // 4.5 seconds between slides
+  let autoPlayTimer = null;
+  let isPaused = false;
+
+  // Check reduced-motion preference
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const updateSlideshow = (newIndex) => {
-    // Handle bounds
+    // Handle wrap-around bounds
     if (newIndex < 0) {
       currentIndex = totalSlides - 1;
     } else if (newIndex >= totalSlides) {
@@ -30,22 +40,22 @@ export function initSlideshow() {
       currentIndex = newIndex;
     }
 
-    // Move track
+    // Move track smoothly
     track.style.transform = `translateX(-${currentIndex * 100}%)`;
 
-    // Update dots
+    // Update pagination dots
     dots.forEach((dot, idx) => {
       const isSelected = idx === currentIndex;
       dot.setAttribute('aria-selected', isSelected ? 'true' : 'false');
       dot.setAttribute('tabindex', isSelected ? '0' : '-1');
     });
 
-    // Update counter
+    // Update accessible counter
     if (counter) {
-      counter.textContent = `Look ${currentIndex + 1} of ${totalSlides}`;
+      counter.textContent = `${currentIndex + 1} of ${totalSlides}`;
     }
 
-    // Update slides visibility for assistive tech
+    // Update accessibility attributes for screen readers
     slides.forEach((slide, idx) => {
       if (idx === currentIndex) {
         slide.removeAttribute('aria-hidden');
@@ -55,40 +65,103 @@ export function initSlideshow() {
     });
   };
 
-  // Event Listeners for Prev/Next Buttons
+  const nextSlide = () => {
+    updateSlideshow(currentIndex + 1);
+  };
+
+  const prevSlide = () => {
+    updateSlideshow(currentIndex - 1);
+  };
+
+  // Auto-play management
+  const startAutoPlay = () => {
+    if (prefersReducedMotion || autoPlayTimer !== null || isPaused) return;
+    autoPlayTimer = setInterval(() => {
+      nextSlide();
+    }, AUTO_PLAY_INTERVAL);
+  };
+
+  const stopAutoPlay = () => {
+    if (autoPlayTimer !== null) {
+      clearInterval(autoPlayTimer);
+      autoPlayTimer = null;
+    }
+  };
+
+  const restartAutoPlay = () => {
+    stopAutoPlay();
+    startAutoPlay();
+  };
+
+  // Pause on hover & focus
+  slideshowWrapper.addEventListener('mouseenter', () => {
+    isPaused = true;
+    stopAutoPlay();
+  });
+
+  slideshowWrapper.addEventListener('mouseleave', () => {
+    isPaused = false;
+    startAutoPlay();
+  });
+
+  slideshowWrapper.addEventListener('focusin', () => {
+    isPaused = true;
+    stopAutoPlay();
+  });
+
+  slideshowWrapper.addEventListener('focusout', () => {
+    isPaused = false;
+    startAutoPlay();
+  });
+
+  // Pause when page is hidden / tab switched
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      stopAutoPlay();
+    } else if (!isPaused) {
+      startAutoPlay();
+    }
+  });
+
+  // Manual Prev / Next Button Controls
   if (prevBtn) {
     prevBtn.addEventListener('click', () => {
-      updateSlideshow(currentIndex - 1);
+      prevSlide();
+      restartAutoPlay();
     });
   }
 
   if (nextBtn) {
     nextBtn.addEventListener('click', () => {
-      updateSlideshow(currentIndex + 1);
+      nextSlide();
+      restartAutoPlay();
     });
   }
 
-  // Event Listeners for Pagination Dots
+  // Pagination Dots
   dots.forEach((dot, idx) => {
     dot.addEventListener('click', () => {
       updateSlideshow(idx);
+      restartAutoPlay();
     });
   });
 
-  // Keyboard Navigation on Slideshow Wrapper
+  // Keyboard navigation
   slideshowWrapper.setAttribute('tabindex', '0');
-  slideshowWrapper.setAttribute('aria-label', 'Signature Fashion Slideshow. Use left and right arrow keys to navigate looks.');
+  slideshowWrapper.setAttribute('aria-label', 'Signature fashion gallery. Use left and right arrow keys to navigate.');
   slideshowWrapper.addEventListener('keydown', (event) => {
     if (event.key === 'ArrowLeft') {
       event.preventDefault();
-      updateSlideshow(currentIndex - 1);
+      prevSlide();
+      restartAutoPlay();
     } else if (event.key === 'ArrowRight') {
       event.preventDefault();
-      updateSlideshow(currentIndex + 1);
+      nextSlide();
+      restartAutoPlay();
     }
   });
 
-  // Touch Swipe Support for Mobile Devices
+  // Mobile Touch Gestures
   let touchStartX = 0;
   let touchEndX = 0;
 
@@ -96,6 +169,7 @@ export function initSlideshow() {
     'touchstart',
     (e) => {
       touchStartX = e.changedTouches[0].screenX;
+      stopAutoPlay();
     },
     { passive: true }
   );
@@ -104,24 +178,20 @@ export function initSlideshow() {
     'touchend',
     (e) => {
       touchEndX = e.changedTouches[0].screenX;
-      handleGesture();
+      const diff = touchEndX - touchStartX;
+      if (Math.abs(diff) > 40) {
+        if (diff > 0) {
+          prevSlide();
+        } else {
+          nextSlide();
+        }
+      }
+      restartAutoPlay();
     },
     { passive: true }
   );
 
-  const handleGesture = () => {
-    const diff = touchEndX - touchStartX;
-    if (Math.abs(diff) > 40) {
-      if (diff > 0) {
-        // Swiped right -> Previous
-        updateSlideshow(currentIndex - 1);
-      } else {
-        // Swiped left -> Next
-        updateSlideshow(currentIndex + 1);
-      }
-    }
-  };
-
-  // Initialize first slide state
+  // Initialize
   updateSlideshow(0);
+  startAutoPlay();
 }

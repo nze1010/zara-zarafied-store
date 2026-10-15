@@ -10,12 +10,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0.8rem 1.6rem;
+  gap: 0.6rem;
+  padding: 0.85rem 1.8rem;
   font-family: var(--font-sans);
   font-size: var(--font-size-sm);
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   text-decoration: none;
   border-radius: var(--radius-full);
   transition: all var(--transition-fast);
@@ -79,13 +79,35 @@
   transform: translateY(-2px);
 }
 
+/* Prominent WhatsApp Action Button */
+.btn-whatsapp {
+  background: #25D366;
+  color: #FFFFFF;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
+}
+
+.btn-whatsapp:hover {
+  background: #1EBE5B;
+  color: #FFFFFF;
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.45);
+  transform: translateY(-2px);
+}
+
+.btn-whatsapp svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
 .btn-sm {
-  padding: 0.5rem 1.1rem;
+  padding: 0.55rem 1.25rem;
   font-size: var(--font-size-xs);
 }
 
 .btn-lg {
-  padding: 1rem 2.2rem;
+  padding: 0.95rem 2.2rem;
   font-size: var(--font-size-base);
 }
 
@@ -105,7 +127,7 @@
 }
 
 .badge-plum {
-  background: rgba(68, 36, 56, 0.1);
+  background: rgba(68, 36, 56, 0.08);
   color: var(--color-deep-plum);
 }
 
@@ -121,7 +143,7 @@
 }
 
 /* ==========================================================================
-   Welcome Card Component (Step 6)
+   Welcome Card Component
    - Small, non-blocking dismissible card
    - Uses actual owner portrait
    - Positioned in bottom-right viewport corner
@@ -132,7 +154,7 @@
   bottom: var(--space-lg);
   right: var(--space-lg);
   z-index: var(--z-welcome-card);
-  max-width: min(390px, calc(100vw - 2rem));
+  max-width: min(380px, calc(100vw - 2rem));
   pointer-events: none; /* Allows clicks outside card to pass through */
 }
 
@@ -164,8 +186,8 @@
 }
 
 .welcome-avatar-frame {
-  width: 64px;
-  height: 64px;
+  width: 60px;
+  height: 60px;
   border-radius: var(--radius-full);
   overflow: hidden;
   flex-shrink: 0;
@@ -198,7 +220,7 @@
 .welcome-greeting-copy {
   font-size: var(--font-size-xs);
   color: var(--color-muted-text);
-  line-height: 1.4;
+  line-height: 1.45;
   margin-bottom: var(--space-xs);
 }
 
