@@ -237,18 +237,27 @@
             </div>
           </div>
 
-          <!-- Cloudinary Image Upload -->
+          <!-- Cloudinary Image Upload with Automatic Browser Optimization -->
           <div class="admin-form-group">
-            <label class="admin-form-label">Primary Outfit Photograph (Max 5 MB - JPEG/PNG/WebP) *</label>
+            <label class="admin-form-label">Primary Outfit Photograph (Auto-optimized &le; 4.5 MB - JPEG/PNG/WebP) *</label>
             <div class="upload-dropzone" id="image-dropzone">
               <input type="file" id="form-image-input" accept="image/jpeg,image/png,image/webp" style="display: none;">
               <div class="upload-dropzone-icon">&#128247;</div>
               <p style="font-weight: 600; margin-bottom: 4px;">Click or drag fashion photograph here</p>
-              <p style="font-size: var(--text-xs); color: var(--color-muted-text);">Uploads directly to Cloudinary (zara/products)</p>
+              <p style="font-size: var(--text-xs); color: var(--color-muted-text);">Automatically compressed in browser &rarr; Cloudinary (zara/products)</p>
+
+              <!-- Upload & Compression Status -->
+              <div class="upload-status-text" id="upload-status-text" style="display: none;"></div>
 
               <div class="upload-progress-bar" id="upload-progress" style="display: none;">
                 <div class="upload-progress-fill" id="upload-progress-fill"></div>
               </div>
+
+              <!-- Optimization Stats Badge (e.g. Original: 7.2 MB → Optimized: 1.4 MB (80.6% smaller)) -->
+              <div class="upload-compression-badge" id="upload-compression-badge" style="display: none;"></div>
+
+              <!-- Upload/Compression Error Box -->
+              <div class="upload-inline-error" id="upload-error-box" style="display: none;"></div>
 
               <div class="upload-preview-frame" id="upload-preview-container" style="display: none;">
                 <img src="" alt="Uploaded Preview" class="upload-preview-img" id="upload-preview-img">

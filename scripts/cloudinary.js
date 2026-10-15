@@ -17,7 +17,7 @@ export const CLOUDINARY_CONFIG = {
   cloudName: 'dkeqnovyf',
   uploadPreset: 'zara_product_images',
   folder: 'zara/products',
-  maxSizeBytes: 5 * 1024 * 1024, // 5 MB
+  maxSizeBytes: 4.5 * 1024 * 1024, // 4.5 MB ceiling with safety buffer
   allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp']
 };
 
@@ -40,12 +40,12 @@ export function validateImageFile(file) {
     };
   }
 
-  // Validate file size (max 5MB)
+  // Validate file size (max 4.5MB)
   if (file.size > CLOUDINARY_CONFIG.maxSizeBytes) {
-    const sizeInMB = (file.size / (1024 * 1024)).toFixed(1);
+    const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
     return {
       valid: false,
-      error: `File is too large (${sizeInMB} MB). Maximum allowed image size is 5 MB.`
+      error: `Optimized file size is too large (${sizeInMB} MB). Maximum allowed upload size is 4.5 MB.`
     };
   }
 

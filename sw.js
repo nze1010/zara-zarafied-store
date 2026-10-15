@@ -3,23 +3,27 @@
  * Lightweight PWA Service Worker
  */
 
-const CACHE_NAME = 'zarafied-v5';
+const CACHE_NAME = 'zarafied-v6';
 const CORE_ASSETS = [
   './',
   './index.html',
+  './admin.html',
   './styles/tokens.css',
   './styles/base.css',
   './styles/layout.css',
   './styles/components.css',
   './styles/animations.css',
+  './styles/admin.css',
   './scripts/main.js',
   './scripts/nav.js',
   './scripts/slideshow.js',
   './scripts/welcome-card.js',
   './scripts/firebase-config.js',
   './scripts/cloudinary.js',
+  './scripts/compressor.js',
   './scripts/products-service.js',
   './scripts/shop.js',
+  './scripts/admin.js',
   './ZARA_ASSETS/brand/zara-logo.png',
   './ZARA_ASSETS/owner/owner-portrait-red-dress.png',
   './ZARA_ASSETS/owner/owner-outfit-reference-collage.png',

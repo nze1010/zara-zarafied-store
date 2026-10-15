@@ -29,12 +29,13 @@
   - `scripts/slideshow.js` — Automatic fashion showcase carousel (4.5s advance, hover/focus pause, manual arrows, dots, swipe, keyboard)
   - `scripts/welcome-card.js` — Dismissible owner welcome card with session storage frequency control
   - `scripts/firebase-config.js` — Isolated Firebase modular SDK initialization with graceful standby mode
-  - `scripts/cloudinary.js` — Cloudinary unsigned upload client with strict 5MB limit, MIME validation, and upload progress feedback
+  - `scripts/cloudinary.js` — Cloudinary unsigned upload client with strict 4.5MB ceiling, MIME validation, and upload progress feedback
+  - `scripts/compressor.js` — Client-side adaptive image compressor with progressive quality reduction, max 2000px dimension capping, and transparency preservation
   - `scripts/products-service.js` — Cloud Firestore product CRUD and query service with currency formatting
   - `scripts/shop.js` — Dynamic public shop catalogue controller with category filters, loading skeleton shimmers, and WhatsApp ordering modal
-  - `scripts/admin.js` — Authenticated admin dashboard controller with Firebase Auth, cryptographic custom claim checks, and product modal management
+  - `scripts/admin.js` — Authenticated admin dashboard controller with Firebase Auth, cryptographic custom claim checks, live compression feedback, and product modal management
   - `scripts/main.js` — Application entry point, scroll reveal observer, and service worker registration
-- **Lightweight PWA Foundation**: `manifest.webmanifest` and `sw.js` (v5) with asset caching and Cloudinary bypass
+- **Lightweight PWA Foundation**: `manifest.webmanifest` and `sw.js` (v6) with asset caching and Cloudinary bypass
 - **Firebase Infrastructure & Security Rules**:
   - `firestore.rules` — Production-grade Cloud Firestore security rules (public read for `status == 'published'`, admin-only write)
   - `storage.rules` — Firebase Storage rules with image type validation and 5MB size limit
@@ -47,7 +48,12 @@
 - **Cloud Name:** `dkeqnovyf`
 - **Upload Preset:** `zara_product_images` (Unsigned)
 - **Asset Folder:** `zara/products`
-- **File Validation:** Restricts uploads to JPEG, PNG, or WebP; maximum 5 MB
+- **Automatic Browser Compression:**
+  - Files are optimized locally in the browser before upload (`scripts/compressor.js`).
+  - Output file size strictly capped at **4.5 MB** (safety ceiling below Cloudinary's 5 MB limit).
+  - Maximum dimension capped at 2,000 pixels (longest side) without upscaling small images.
+  - WebP preference with alpha transparency preservation; progressive quality adaptation.
+  - Live feedback badge shows original vs. optimized file size and reduction percentage.
 - **Security Model:**
   - Front-end code does not include any API secrets.
   - While unsigned presets can receive direct uploads from anyone observing the network request, the store catalogue is guarded by Firestore Security Rules: only authenticated administrators holding `{ admin: true }` custom claims can attach image URLs to the Firestore `products` collection.

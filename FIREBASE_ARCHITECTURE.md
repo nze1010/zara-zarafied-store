@@ -133,6 +133,16 @@ An unsigned upload preset enables direct browser-to-Cloudinary uploads without r
    - Orphaned assets can be periodically identified and deleted using a secure, private maintenance script executed outside the browser with the API secret, or manually reviewed via the Cloudinary Console Media Library.
    - This approach strictly preserves the **Firebase Spark plan** without introducing paid Firebase Blaze Cloud Functions or serverless compute costs.
 
+### 2.4 Automatic Browser-Side Image Compression & Optimization
+- **Module:** `scripts/compressor.js`
+- **Output Ceiling:** Strict **4.5 MB** (4,718,592 bytes), leaving a deliberate safety margin below Cloudinary's 5 MB limit.
+- **Dimension Normalization:** Maximum dimension capped at 2,000 pixels on the longest side while strictly preserving aspect ratio and preventing upscaling of smaller photographs.
+- **Adaptive Quality Progression:** Begins at high fidelity (quality 0.92) and progressively steps down quality (0.85 &rarr; 0.78 &rarr; 0.70 &rarr; 0.60) and dimensions (1600 &rarr; 1200) only when necessary to meet the 4.5 MB target.
+- **Format & Transparency Preservation:** Automatically prefers modern WebP encoding when browser support allows. For transparent PNG files, alpha channels are preserved without black/white background destruction.
+- **EXIF Handling:** Leverages `createImageBitmap` with `{ imageOrientation: 'from-image' }` to correctly orient mobile phone photography.
+- **Fail-Safe Upload Rule:** Uncompressed originals are **never** uploaded as fallbacks if compression fails. Unsupported or corrupt files are rejected with descriptive error alerts.
+- **Live User Feedback:** Displays active stage indicator, original file size, optimized file size, percentage reduction badge (e.g. `Original: 7.2 MB → Optimized: 1.4 MB (80.6% smaller)`), and upload progress bar.
+
 ---
 
 ## 3. Firebase Authentication & Trusted Admin Authorization

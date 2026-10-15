@@ -19,7 +19,8 @@ import {
   toggleProductPublishStatus, 
   formatCurrency 
 } from './products-service.js';
-import { uploadImageToCloudinary, validateImageFile } from './cloudinary.js';
+import { uploadImageToCloudinary } from './cloudinary.js';
+import { compressImage, formatBytes, validateInputFile } from './compressor.js';
 
 let currentUser = null;
 let isVerifiedAdmin = false;
@@ -387,6 +388,7 @@ function openCreateModal() {
 
   document.getElementById('upload-preview-container').style.display = 'none';
   document.getElementById('upload-progress').style.display = 'none';
+  resetUploadFeedback();
 
   const modal = document.getElementById('product-modal');
   modal.classList.add('is-open');
@@ -425,11 +427,31 @@ function openEditModal(productId) {
   }
 
   document.getElementById('upload-progress').style.display = 'none';
+  resetUploadFeedback();
   document.getElementById('product-modal').classList.add('is-open');
 }
 
 function closeProductModal() {
   document.getElementById('product-modal').classList.remove('is-open');
+  resetUploadFeedback();
+}
+
+function resetUploadFeedback() {
+  const statusText = document.getElementById('upload-status-text');
+  const statsBadge = document.getElementById('upload-compression-badge');
+  const errorBox = document.getElementById('upload-error-box');
+  if (statusText) {
+    statusText.textContent = '';
+    statusText.style.display = 'none';
+  }
+  if (statsBadge) {
+    statsBadge.textContent = '';
+    statsBadge.style.display = 'none';
+  }
+  if (errorBox) {
+    errorBox.textContent = '';
+    errorBox.style.display = 'none';
+  }
 }
 
 /**
@@ -473,43 +495,118 @@ function setupImageDropzone() {
     }
   });
 
+  let activeObjectUrl = null;
+
   async function handleImageUpload(file) {
-    const validation = validateImageFile(file);
+    const statusText = document.getElementById('upload-status-text');
+    const statsBadge = document.getElementById('upload-compression-badge');
+    const errorBox = document.getElementById('upload-error-box');
+    const saveBtn = document.getElementById('btn-save-product');
+
+    // Reset feedback states
+    resetUploadFeedback();
+
+    // Step 1: Validate original file format and size
+    const validation = validateInputFile(file);
     if (!validation.valid) {
-      alert(validation.error);
+      showUploadError(validation.error);
       return;
     }
 
-    // Local instant preview
-    const objectUrl = URL.createObjectURL(file);
-    previewImg.src = objectUrl;
+    // Revoke previous object URL if any
+    if (activeObjectUrl) {
+      URL.revokeObjectURL(activeObjectUrl);
+      activeObjectUrl = null;
+    }
+
+    // Step 2: Show initial preview & visible compression indicator
+    activeObjectUrl = URL.createObjectURL(file);
+    previewImg.src = activeObjectUrl;
     previewContainer.style.display = 'block';
 
+    if (statusText) {
+      statusText.textContent = `Analyzing & optimizing ${formatBytes(file.size)} image...`;
+      statusText.style.display = 'block';
+    }
     progressBar.style.display = 'block';
-    progressFill.style.width = '10%';
+    progressFill.style.width = '15%';
+    if (saveBtn) saveBtn.disabled = true;
 
     try {
-      const result = await uploadImageToCloudinary(file, (percent) => {
-        progressFill.style.width = `${percent}%`;
+      // Step 3: Compress locally in browser (adaptive progressive compression)
+      const compressed = await compressImage(file, (status) => {
+        if (statusText) statusText.textContent = status.message;
+      });
+
+      // Update preview to optimized file
+      URL.revokeObjectURL(activeObjectUrl);
+      activeObjectUrl = URL.createObjectURL(compressed.optimizedFile);
+      previewImg.src = activeObjectUrl;
+
+      // Step 4: Show user feedback
+      // Example: Original: 7.2 MB → Optimized: 1.4 MB (80.6% smaller)
+      if (statsBadge) {
+        statsBadge.textContent = `Original: ${formatBytes(compressed.originalSize)} → Optimized: ${formatBytes(compressed.optimizedSize)} (${compressed.reductionText})`;
+        statsBadge.style.display = 'inline-block';
+      }
+
+      // Step 5: Upload ONLY the optimized file to Cloudinary
+      if (statusText) {
+        statusText.textContent = `Uploading optimized image (${formatBytes(compressed.optimizedSize)}) to Cloudinary...`;
+      }
+      progressFill.style.width = '35%';
+
+      const uploadResult = await uploadImageToCloudinary(compressed.optimizedFile, (percent) => {
+        // Map upload progress from 35% to 100%
+        const mapped = Math.round(35 + (percent * 0.65));
+        progressFill.style.width = `${mapped}%`;
+        if (statusText) {
+          statusText.textContent = `Uploading to Cloudinary (${percent}%)...`;
+        }
       });
 
       progressFill.style.width = '100%';
+      if (statusText) {
+        statusText.textContent = 'Upload complete! Image saved.';
+      }
+
+      // Step 6: Save returned secure URL and asset ID
       pendingMainImage = {
-        secure_url: result.secure_url,
-        url: result.url,
-        public_id: result.public_id,
-        format: result.format,
-        bytes: result.bytes,
+        secure_url: uploadResult.secure_url,
+        url: uploadResult.url,
+        public_id: uploadResult.public_id,
+        asset_id: uploadResult.asset_id,
+        format: uploadResult.format,
+        bytes: uploadResult.bytes,
+        original_bytes: compressed.originalSize,
+        width: uploadResult.width || compressed.dimensions.width,
+        height: uploadResult.height || compressed.dimensions.height,
         alt: document.getElementById('form-title').value.trim() || 'ZARAFIED Fashion Outfit'
       };
 
       setTimeout(() => {
         progressBar.style.display = 'none';
-      }, 600);
+      }, 700);
     } catch (err) {
-      alert('Cloudinary Upload Failed: ' + err.message);
-      progressBar.style.display = 'none';
+      console.error('[ZARA Admin Image Processing Error]:', err);
+      // DO NOT upload original file as fallback
       pendingMainImage = null;
+      progressBar.style.display = 'none';
+      if (statusText) statusText.style.display = 'none';
+      showUploadError(err.message || 'Image optimization or upload failed.');
+    } finally {
+      if (saveBtn) saveBtn.disabled = false;
+      if (fileInput) fileInput.value = '';
+    }
+  }
+
+  function showUploadError(msg) {
+    const errorBox = document.getElementById('upload-error-box');
+    if (errorBox) {
+      errorBox.textContent = msg;
+      errorBox.style.display = 'block';
+    } else {
+      alert(msg);
     }
   }
 }
