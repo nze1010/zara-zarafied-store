@@ -3,7 +3,7 @@
  * Lightweight PWA Service Worker
  */
 
-const CACHE_NAME = 'zarafied-v4';
+const CACHE_NAME = 'zarafied-v5';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -17,6 +17,9 @@ const CORE_ASSETS = [
   './scripts/slideshow.js',
   './scripts/welcome-card.js',
   './scripts/firebase-config.js',
+  './scripts/cloudinary.js',
+  './scripts/products-service.js',
+  './scripts/shop.js',
   './ZARA_ASSETS/brand/zara-logo.png',
   './ZARA_ASSETS/owner/owner-portrait-red-dress.png',
   './ZARA_ASSETS/owner/owner-outfit-reference-collage.png',
@@ -53,6 +56,13 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
+
+  // Bypass cache for Firestore, Cloudinary, and Auth API calls
+  if (url.hostname.includes('cloudinary.com') || url.hostname.includes('googleapis.com') || url.hostname.includes('firebaseio.com')) {
+    return;
+  }
+
   event.respondWith(
     fetch(event.request).catch(() => {
       return caches.match(event.request);

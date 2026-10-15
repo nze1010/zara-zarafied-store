@@ -7,6 +7,7 @@ import { initNavigation } from './nav.js';
 import { initSlideshow } from './slideshow.js';
 import { initWelcomeCard } from './welcome-card.js';
 import { initFirebase } from './firebase-config.js';
+import { initShop } from './shop.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   // Initialize Core Modules
@@ -16,6 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialize Firebase Infrastructure (Graceful Standby Mode)
   initFirebase();
+
+  // Initialize Dynamic Public Shop
+  initShop();
 
   // Scroll Reveal Animations with IntersectionObserver
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | ZARA — ZARAFIED STORE</title>
+  
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/png" href="./ZARA_ASSETS/brand/zara-logo.png">
+
+  <!-- Google Fonts Preconnect & Styles -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="./styles/tokens.css">
+  <link rel="stylesheet" href="./styles/base.css">
+  <link rel="stylesheet" href="./styles/components.css">
+  <link rel="stylesheet" href="./styles/admin.css">
+</head>
+<body class="admin-body">
+
+  <!-- ========================================================================
+       SECTION A: ADMIN AUTHENTICATION SCREEN
+       ======================================================================== -->
+  <div class="admin-login-wrapper" id="admin-login-view">
+    <div class="admin-login-card">
+      <div class="admin-login-header">
+        <img src="./ZARA_ASSETS/brand/zara-logo.png" alt="ZARAFIED Logo" class="admin-login-logo">
+        <h1 class="admin-login-title">Admin Portal</h1>
+        <p class="admin-login-subtitle">Sign in to manage the ZARAFIED product catalogue.</p>
+      </div>
+
+      <div class="admin-alert admin-alert-error" id="login-error-alert" style="display: none;"></div>
+
+      <form id="admin-login-form">
+        <div class="admin-form-group">
+          <label class="admin-form-label" for="login-email">Official Email</label>
+          <input 
+            type="email" 
+            id="login-email" 
+            class="admin-form-input" 
+            placeholder="Janetzara97@gmail.com" 
+            required 
+            autocomplete="username"
+          >
+        </div>
+
+        <div class="admin-form-group">
+          <label class="admin-form-label" for="login-password">Password</label>
+          <input 
+            type="password" 
+            id="login-password" 
+            class="admin-form-input" 
+            placeholder="••••••••••••" 
+            required 
+            autocomplete="current-password"
+          >
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="btn-login-submit" style="width: 100%; margin-top: var(--space-sm);">
+          Sign In to Dashboard
+        </button>
+      </form>
+
+      <div style="margin-top: var(--space-lg); text-align: center;">
+        <a href="./index.html" class="footer-link" style="font-size: var(--text-xs);">
+          &larr; Return to Public Website
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       SECTION B: AUTHENTICATED DASHBOARD
+       ======================================================================== -->
+  <div class="admin-dashboard-container" id="admin-dashboard-view">
+    <!-- Topbar -->
+    <header class="admin-topbar">
+      <div style="display: flex; align-items: center; gap: var(--space-md);">
+        <a href="./admin.html" class="admin-brand">
+          <img src="./ZARA_ASSETS/brand/zara-logo.png" alt="Logo" class="admin-brand-logo">
+          <span class="admin-brand-name">ZARAFIED CMS</span>
+        </a>
+      </div>
+
+      <div class="admin-user-nav">
+        <span class="admin-user-badge" id="admin-user-display">Janetzara97@gmail.com</span>
+        <a href="./index.html" class="btn btn-outline-sm" target="_blank" rel="noopener">View Store &rarr;</a>
+        <button type="button" class="btn btn-outline-sm" id="btn-admin-logout">Sign Out</button>
+      </div>
+    </header>
+
+    <!-- Main Admin Workspace -->
+    <main class="admin-main-content">
+      <!-- Role verification warning (shown if user logged in but lacks { admin: true } custom claim) -->
+      <div class="admin-alert admin-alert-warning" id="admin-role-warning" style="display: none;">
+        <strong>Access Restricted:</strong> Your account is signed in, but the administrator custom claim has not been provisioned yet.
+        <br>
+        To enable full write access, store operations must run: <code>node scripts/grant-admin.cjs</code> in the workspace.
+      </div>
+
+      <!-- Stats Summary -->
+      <div class="admin-stats-row">
+        <div class="admin-stat-card">
+          <div class="admin-stat-label">Total Outfits</div>
+          <div class="admin-stat-val" id="stat-total-products">0</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-label">Published (Live)</div>
+          <div class="admin-stat-val" id="stat-published-products" style="color: #2E7D32;">0</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-label">Drafts (Hidden)</div>
+          <div class="admin-stat-val" id="stat-draft-products" style="color: #E65100;">0</div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="admin-toolbar">
+        <div>
+          <h2 class="admin-toolbar-title">Product Catalogue</h2>
+          <p style="color: var(--color-muted-text); font-size: var(--text-sm);">
+            Manage ready-to-wear pieces, custom couture entries, and published statuses.
+          </p>
+        </div>
+        <div class="admin-toolbar-actions">
+          <button type="button" class="btn btn-primary" id="btn-add-product">
+            <span>+</span> Add New Outfit
+          </button>
+        </div>
+      </div>
+
+      <!-- Product Table -->
+      <div class="admin-table-wrapper">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Outfit Title</th>
+              <th>Category</th>
+              <th>Price (NGN)</th>
+              <th>Availability</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admin-products-tbody">
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 40px; color: var(--color-muted-text);">
+                Loading product catalogue...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: ADD / EDIT PRODUCT
+       ======================================================================== -->
+  <div class="admin-modal-backdrop" id="product-modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="admin-modal-card">
+      <div class="admin-modal-header">
+        <h3 class="admin-modal-title" id="modal-form-title">Add New Outfit</h3>
+        <button type="button" class="modal-close-btn" id="modal-form-close">&times;</button>
+      </div>
+
+      <div class="admin-modal-body">
+        <form id="product-form">
+          <input type="hidden" id="form-product-id">
+
+          <!-- Title -->
+          <div class="admin-form-group">
+            <label class="admin-form-label" for="form-title">Outfit Title *</label>
+            <input type="text" id="form-title" class="admin-form-input" placeholder="e.g. Sculpted Ankara Evening Gown" required>
+          </div>
+
+          <!-- Description -->
+          <div class="admin-form-group">
+            <label class="admin-form-label" for="form-description">Description</label>
+            <textarea id="form-description" class="admin-form-textarea" placeholder="Detail the cut, fabric, lining, and styling notes..."></textarea>
+          </div>
+
+          <!-- Row: Price & Category -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+            <div class="admin-form-group">
+              <label class="admin-form-label" for="form-price">Price (NGN ₦) *</label>
+              <input type="number" id="form-price" class="admin-form-input" placeholder="45000" min="0" required>
+            </div>
+
+            <div class="admin-form-group">
+              <label class="admin-form-label" for="form-category">Category *</label>
+              <select id="form-category" class="admin-form-select" required>
+                <option value="ready-to-wear">Ready-to-Wear</option>
+                <option value="two-piece">Two-Piece Set</option>
+                <option value="gowns">Gowns & Dresses</option>
+                <option value="bespoke">Custom Design / Bespoke</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Row: Availability & Status -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+            <div class="admin-form-group">
+              <label class="admin-form-label" for="form-availability">Availability</label>
+              <select id="form-availability" class="admin-form-select">
+                <option value="in_stock">In Stock</option>
+                <option value="made_to_order">Made to Order</option>
+                <option value="out_of_stock">Sold Out</option>
+              </select>
+            </div>
+
+            <div class="admin-form-group">
+              <label class="admin-form-label" for="form-status">Publication Status</label>
+              <select id="form-status" class="admin-form-select">
+                <option value="published">Published (Visible in Shop)</option>
+                <option value="draft">Draft (Hidden from Public)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Available Sizes -->
+          <div class="admin-form-group">
+            <label class="admin-form-label">Available Standard Sizes</label>
+            <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm); margin-top: 4px;" id="sizes-checkbox-group">
+              <label><input type="checkbox" value="UK 6" name="sizes"> UK 6</label>
+              <label><input type="checkbox" value="UK 8" name="sizes"> UK 8</label>
+              <label><input type="checkbox" value="UK 10" name="sizes"> UK 10</label>
+              <label><input type="checkbox" value="UK 12" name="sizes"> UK 12</label>
+              <label><input type="checkbox" value="UK 14" name="sizes"> UK 14</label>
+              <label><input type="checkbox" value="UK 16" name="sizes"> UK 16</label>
+              <label><input type="checkbox" value="UK 18" name="sizes"> UK 18</label>
+              <label><input type="checkbox" value="Custom / Made-to-Measure" name="sizes" checked> Made-to-Measure</label>
+            </div>
+          </div>
+
+          <!-- Cloudinary Image Upload -->
+          <div class="admin-form-group">
+            <label class="admin-form-label">Primary Outfit Photograph (Max 5 MB - JPEG/PNG/WebP) *</label>
+            <div class="upload-dropzone" id="image-dropzone">
+              <input type="file" id="form-image-input" accept="image/jpeg,image/png,image/webp" style="display: none;">
+              <div class="upload-dropzone-icon">&#128247;</div>
+              <p style="font-weight: 600; margin-bottom: 4px;">Click or drag fashion photograph here</p>
+              <p style="font-size: var(--text-xs); color: var(--color-muted-text);">Uploads directly to Cloudinary (zara/products)</p>
+
+              <div class="upload-progress-bar" id="upload-progress" style="display: none;">
+                <div class="upload-progress-fill" id="upload-progress-fill"></div>
+              </div>
+
+              <div class="upload-preview-frame" id="upload-preview-container" style="display: none;">
+                <img src="" alt="Uploaded Preview" class="upload-preview-img" id="upload-preview-img">
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="admin-modal-footer">
+        <button type="button" class="btn btn-outline-sm" id="btn-cancel-modal">Cancel</button>
+        <button type="button" class="btn btn-primary btn-sm" id="btn-save-product">Save Outfit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: DELETE CONFIRMATION
+       ======================================================================== -->
+  <div class="admin-modal-backdrop" id="delete-modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="admin-modal-card" style="max-width: 440px;">
+      <div class="admin-modal-header">
+        <h3 class="admin-modal-title">Confirm Deletion</h3>
+        <button type="button" class="modal-close-btn" id="modal-delete-close">&times;</button>
+      </div>
+      <div class="admin-modal-body">
+        <p>Are you sure you want to permanently delete <strong id="delete-product-title"></strong> from the catalogue?</p>
+        <p style="font-size: var(--text-xs); color: var(--color-muted-text); margin-top: 8px;">
+          This action cannot be undone.
+        </p>
+      </div>
+      <div class="admin-modal-footer">
+        <button type="button" class="btn btn-outline-sm" id="btn-cancel-delete">Cancel</button>
+        <button type="button" class="btn btn-primary btn-sm" id="btn-confirm-delete" style="background: #D32F2F; border-color: #D32F2F;">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ES Modules Script -->
+  <script type="module" src="./scripts/admin.js"></script>
+</body>
+</html>
