@@ -3,7 +3,7 @@
  * Lightweight PWA Service Worker
  */
 
-const CACHE_NAME = 'zarafied-v7';
+const CACHE_NAME = 'zarafied-v8';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -26,6 +26,7 @@ const CORE_ASSETS = [
   './scripts/admin.js',
   './ZARA_ASSETS/brand/zara-logo.png',
   './ZARA_ASSETS/owner/owner-portrait-pink-outfit.jpg',
+  './ZARA_ASSETS/owner/owner-portrait-yellow-outfit.jpg',
   './ZARA_ASSETS/owner/owner-portrait-red-dress.png',
   './ZARA_ASSETS/owner/owner-outfit-reference-collage.png',
   './ZARA_ASSETS/fashion/signature-fashion-01-ankara.png',
