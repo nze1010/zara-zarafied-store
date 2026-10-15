@@ -1,0 +1,117 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // =========================================================================
+    // HELPER FUNCTIONS & AUTHENTICATION PREDICATES
+    // =========================================================================
+
+    // Verify if the user is authenticated with Firebase Auth
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Verify if the authenticated user holds a trusted custom admin claim.
+    // Client-provided roles, UIDs or document fields are NEVER trusted.
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+
+    // Validate valid incoming timestamp
+    function isValidTimestamp(val) {
+      return val is timestamp;
+    }
+
+    // =========================================================================
+    // COLLECTION: products
+    // Purpose: Store catalogue items, descriptions, prices, categories & images.
+    // =========================================================================
+    match /products/{productId} {
+      // Public visitors can only view published products
+      allow read: if (resource != null && resource.data.status == 'published') || isAdmin();
+      // Only authorized administrators can create, update or delete products
+      allow write: if isAdmin();
+    }
+
+    // =========================================================================
+    // COLLECTION: portfolio
+    // Purpose: Bespoke lookbook entries, client showcases & signature looks.
+    // =========================================================================
+    match /portfolio/{portfolioId} {
+      // Public visitors can only view published portfolio looks
+      allow read: if (resource != null && resource.data.status == 'published') || isAdmin();
+      // Only authorized administrators can manage portfolio entries
+      allow write: if isAdmin();
+    }
+
+    // =========================================================================
+    // COLLECTION: orders
+    // Purpose: Customer order records, line items, and delivery state.
+    // =========================================================================
+    match /orders/{orderId} {
+      // Orders are confidential and can only be read by authorized administrators
+      allow read: if isAdmin();
+      // Valid order submission: must start as 'pending' with required customer fields
+      allow create: if request.resource.data.status == 'pending'
+                    && request.resource.data.keys().hasAll(['items', 'customer', 'createdAt'])
+                    && request.resource.data.customer is map
+                    && request.resource.data.customer.keys().hasAll(['name', 'contact']);
+      // Only administrators can update status or cancel orders
+      allow update, delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // COLLECTION: customEnquiries
+    // Purpose: Custom design and bespoke tailoring fitting inquiries.
+    // =========================================================================
+    match /customEnquiries/{enquiryId} {
+      // Enquiries are confidential and can only be viewed by administrators
+      allow read, update, delete: if isAdmin();
+      // Public can submit an enquiry with validated payload size and fields
+      allow create: if request.resource.data.keys().hasAll(['name', 'contact', 'message', 'createdAt'])
+                    && request.resource.data.name is string
+                    && request.resource.data.name.size() > 0
+                    && request.resource.data.name.size() <= 100
+                    && request.resource.data.contact is string
+                    && request.resource.data.contact.size() > 0
+                    && request.resource.data.contact.size() <= 100
+                    && request.resource.data.message is string
+                    && request.resource.data.message.size() > 0
+                    && request.resource.data.message.size() <= 2000;
+    }
+
+    // =========================================================================
+    // COLLECTION: reviews
+    // Purpose: Verified client feedback, ratings, and testimonials.
+    // =========================================================================
+    match /reviews/{reviewId} {
+      // Public visitors can only read reviews that have been reviewed & approved
+      allow read: if (resource != null && resource.data.status == 'approved') || isAdmin();
+      // Submissions must start in 'pending' status for admin moderation
+      allow create: if request.resource.data.status == 'pending'
+                    && request.resource.data.keys().hasAll(['author', 'reviewText', 'createdAt'])
+                    && request.resource.data.reviewText is string
+                    && request.resource.data.reviewText.size() <= 1500;
+      // Only administrators can moderate, approve or delete reviews
+      allow update, delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // COLLECTION: siteSettings
+    // Purpose: Public contact info, announcements & store metadata.
+    // =========================================================================
+    match /siteSettings/{settingId} {
+      // Public settings documents marked with isPublic == true are readable
+      allow read: if (resource != null && resource.data.isPublic == true) || isAdmin();
+      // Only administrators can modify site configuration
+      allow write: if isAdmin();
+    }
+
+    // =========================================================================
+    // DEFAULT CATCH-ALL: DENY ALL
+    // =========================================================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

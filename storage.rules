@@ -1,0 +1,70 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // =========================================================================
+    // HELPER FUNCTIONS & VALIDATION
+    // =========================================================================
+
+    // Verify if user is authenticated with Firebase Auth
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Verify user has custom admin claim.
+    // Client-provided roles, UIDs or metadata are NEVER trusted.
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+
+    // Verify uploaded file is an image
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    // Limit maximum upload size to 5MB to preserve performance and bandwidth
+    function isUnder5MB() {
+      return request.resource.size <= 5 * 1024 * 1024;
+    }
+
+    // =========================================================================
+    // PRODUCT MEDIA PATHS: /products/{productId}/{allImages=**}
+    // =========================================================================
+    match /products/{productId}/{allImages=**} {
+      // Public visitors can view product imagery
+      allow read: if true;
+      // Only administrators can upload or delete product images
+      allow write: if isAdmin() && isImage() && isUnder5MB();
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // PORTFOLIO MEDIA PATHS: /portfolio/{portfolioId}/{allImages=**}
+    // =========================================================================
+    match /portfolio/{portfolioId}/{allImages=**} {
+      // Public visitors can view portfolio lookbook imagery
+      allow read: if true;
+      // Only administrators can upload or delete portfolio images
+      allow write: if isAdmin() && isImage() && isUnder5MB();
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // BRAND & HOMEPAGE ASSETS: /brand/{allImages=**}
+    // =========================================================================
+    match /brand/{allImages=**} {
+      // Public visitors can view brand logos and homepage assets
+      allow read: if true;
+      // Only administrators can update brand imagery
+      allow write: if isAdmin() && isImage() && isUnder5MB();
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // DEFAULT CATCH-ALL: DENY ALL
+    // =========================================================================
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,17 @@
+# Local Environment & Secrets
+scripts/firebase-env.js
+*.local
+.env
+.env.*
+
+# Firebase CLI & Emulators
+.firebase/
+*-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Operating System & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,9 +1,12 @@
 # ZARA — ZARAFIED STORE
-## Layer 1: Project Foundation & Refined Homepage
+## Layer 1 & Layer 2: Foundation, Refined Homepage & Firebase Infrastructure
 
 ### Brand Identity
 - **Brand Name:** ZARA — ZARAFIED STORE
 - **Tagline:** “Wear your story.”
+- **Official Email:** `Janetzara97@gmail.com`
+- **WhatsApp:** `+234 814 304 9193` (`https://wa.me/2348143049193`)
+- **Location:** Ogborhill, Aba, Abia State, Nigeria
 - **Palette:**
   - Warm cream: `#FFF5F0`
   - Deep plum: `#442438`
@@ -14,16 +17,21 @@
 
 ---
 
-### Layer 1 Architecture & Technology
+### Layer 1 & 2 Architecture & Technology
 - **HTML5** with semantic landmark structure and accessible ARIA attributes
 - **CSS3** (Vanilla CSS) structured with modern design tokens, modular stylesheets, and fluid responsive design
 - **Vanilla JavaScript (ES Modules)**:
   - `scripts/nav.js` — Mobile navigation drawer and sticky header scroll observer
   - `scripts/slideshow.js` — Automatic fashion showcase carousel (4.5s advance, hover/focus pause, manual arrows, dots, swipe, keyboard)
   - `scripts/welcome-card.js` — Dismissible owner welcome card with session storage frequency control and graceful error handling
+  - `scripts/firebase-config.js` — Isolated Firebase modular SDK initialization with graceful standby mode
   - `scripts/main.js` — Application entry point, scroll reveal observer, and service worker registration
 - **Lightweight PWA Foundation**: `manifest.webmanifest` and `sw.js` for offline shell caching
-- **Firebase-Ready Architecture**: `firebase.json` pre-configured for Firebase Hosting
+- **Firebase Infrastructure & Security Rules**:
+  - `firestore.rules` — Production-grade Cloud Firestore security rules (least privilege, default deny)
+  - `storage.rules` — Firebase Storage rules with image type validation and 5MB size limit
+  - `firebase.json` — Hosting, Firestore, Storage, and Emulator configuration
+  - `FIREBASE_ARCHITECTURE.md` — Detailed data models (`products`, `portfolio`, `orders`, `customEnquiries`, `reviews`, `siteSettings`), storage hierarchy, and custom claim admin authorization
 
 ---
 
@@ -50,7 +58,7 @@
 
 ---
 
-### Local Development
+### Local Development & Preview
 To serve locally for preview:
 ```bash
 python -m http.server 8085
@@ -58,3 +66,8 @@ python -m http.server 8085
 npx serve .
 ```
 Open `http://localhost:8085` in any modern browser.
+
+---
+
+### Firebase Setup & Deployment
+See [FIREBASE_ARCHITECTURE.md](file:///c:/Users/COLLINS/Desktop/zarafied/FIREBASE_ARCHITECTURE.md) for full database schemas, security rules specification, and Firebase CLI instructions.
