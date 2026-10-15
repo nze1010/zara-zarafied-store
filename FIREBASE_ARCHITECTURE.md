@@ -121,6 +121,18 @@ An unsigned upload preset enables direct browser-to-Cloudinary uploads without r
      - Enable Incoming Transformation (e.g., auto-convert to WebP, max width 1600px).
      - Optional: Enable Cloudinary AI Moderation to automatically flag questionable content.
 
+### 2.3 Product Deletion, Image Replacement & Cloudinary Asset Retention Lifecycle
+1. **Asset Retention on Deletion:** When an administrator deletes an outfit via `deleteProduct(id)`, the Firestore document is removed from the database and public catalogue. The image asset in Cloudinary (`public_id`) remains stored in Cloudinary's `zara/products` folder.
+2. **Asset Retention on Replacement:** When an administrator uploads a new photograph for an existing outfit, a new Cloudinary asset is created and the Firestore document's `mainImage` field is updated with the new URL and `public_id`. The previous image asset remains stored in Cloudinary.
+3. **Security Boundary — Why Assets Are Not Deleted from Browser:**
+   - Cloudinary asset destruction requires an authenticated API call signed with the **Cloudinary API Secret**.
+   - Cloudinary unsigned upload presets **cannot perform asset deletion** by design.
+   - The Cloudinary API Secret is **never included in frontend client code**, as doing so would allow any visitor or attacker to hijack the Cloudinary account.
+4. **Asset Tracking & Safe Cleanup:**
+   - Every Firestore product document preserves the Cloudinary asset identifier (`mainImage.public_id` and `mainImage.asset_id`).
+   - Orphaned assets can be periodically identified and deleted using a secure, private maintenance script executed outside the browser with the API secret, or manually reviewed via the Cloudinary Console Media Library.
+   - This approach strictly preserves the **Firebase Spark plan** without introducing paid Firebase Blaze Cloud Functions or serverless compute costs.
+
 ---
 
 ## 3. Firebase Authentication & Trusted Admin Authorization
