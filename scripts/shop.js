@@ -313,3 +313,12 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
+
+/**
+ * Public export to allow opening product detail modal from external components (e.g. slideshow)
+ * @param {string} productId 
+ */
+export function openProductModal(productId) {
+  openModal(productId);
+}
+

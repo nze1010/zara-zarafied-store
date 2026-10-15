@@ -45,6 +45,7 @@
       <!-- Brand Logo & Identity -->
       <a href="#hero" class="brand-link" aria-label="ZARA — ZARAFIED STORE Homepage">
         <img 
+          id="header-brand-logo"
           src="./ZARA_ASSETS/brand/zara-logo.png" 
           alt="ZARA — ZARAFIED STORE Logo" 
           class="brand-logo-img"
@@ -157,7 +158,7 @@
             Wear your <span class="highlight-word">story.</span>
           </h1>
 
-          <p class="hero-description">
+          <p class="hero-description" id="hero-desc">
             Beautiful outfits, made to express your style. Discover our fashion collections or let us create something special just for you.
           </p>
 
@@ -167,10 +168,11 @@
           </div>
         </div>
 
-        <!-- Hero Owner Portrait -->
+        <!-- Hero Owner Portrait (src hydrated from siteSettings/hero via main.js) -->
         <div class="hero-visual">
           <div class="hero-image-frame">
             <img 
+              id="hero-portrait-img"
               src="./ZARA_ASSETS/owner/owner-portrait-pink-outfit.jpg" 
               alt="Creative Director and founder of ZARAFIED STORE in an elegant pink halter outfit" 
               class="hero-portrait-img"
@@ -203,96 +205,11 @@
           </p>
         </div>
 
-        <!-- Slideshow Component (Auto advances ~4.5s, pauses on hover/focus) -->
-        <div class="slideshow-wrapper reveal-on-scroll" id="fashion-slideshow" role="region" aria-roledescription="carousel" aria-label="Fashion Gallery Slideshow">
-          <div class="slides-viewport">
-            <div class="slides-track" id="slides-track">
-              <!-- Slide 1: Signature Ankara -->
-              <article class="slide-item" role="group" aria-roledescription="slide" aria-label="1 of 3">
-                <div class="slide-media">
-                  <img 
-                    src="./ZARA_ASSETS/fashion/signature-fashion-01-ankara.png" 
-                    alt="Classic Ankara tailored piece featuring vibrant African prints and structured lines" 
-                    class="slide-img"
-                    loading="lazy"
-                    width="825"
-                    height="1052"
-                  >
-                </div>
-                <div class="slide-content">
-                  <span class="slide-category">Signature Look</span>
-                  <h3 class="slide-title">Classic Ankara Style</h3>
-                  <p class="slide-description">
-                    Vibrant prints styled with bold structure and modern elegance.
-                  </p>
-                </div>
-              </article>
-
-              <!-- Slide 2: Paired Looks -->
-              <article class="slide-item" role="group" aria-roledescription="slide" aria-label="2 of 3" aria-hidden="true">
-                <div class="slide-media">
-                  <img 
-                    src="./ZARA_ASSETS/fashion/signature-fashion-02-paired-looks.png" 
-                    alt="Coordinated two-piece set featuring matching African print trousers and top" 
-                    class="slide-img"
-                    loading="lazy"
-                    width="766"
-                    height="1280"
-                  >
-                </div>
-                <div class="slide-content">
-                  <span class="slide-category">Coordinated Set</span>
-                  <h3 class="slide-title">Matching Two-Piece Set</h3>
-                  <p class="slide-description">
-                    Effortless coordination designed for both everyday and special occasions.
-                  </p>
-                </div>
-              </article>
-
-              <!-- Slide 3: Colourful Dress -->
-              <article class="slide-item" role="group" aria-roledescription="slide" aria-label="3 of 3" aria-hidden="true">
-                <div class="slide-media">
-                  <img 
-                    src="./ZARA_ASSETS/fashion/signature-fashion-03-colourful-dress.png" 
-                    alt="Colourful African gown with flowing floral prints" 
-                    class="slide-img"
-                    loading="lazy"
-                    width="828"
-                    height="1090"
-                  >
-                </div>
-                <div class="slide-content">
-                  <span class="slide-category">Statement Piece</span>
-                  <h3 class="slide-title">Flowing Statement Dress</h3>
-                  <p class="slide-description">
-                    Graceful draping and lively colors that bring warmth to any event.
-                  </p>
-                </div>
-              </article>
-            </div>
-          </div>
-
-          <!-- Slideshow Controls Bar -->
-          <div class="slideshow-controls-bar">
-            <!-- Previous & Next Navigation Buttons -->
-            <div class="slideshow-nav-btns">
-              <button type="button" class="slideshow-arrow" id="slide-prev" aria-label="Previous slide">
-                &#10094;
-              </button>
-              <button type="button" class="slideshow-arrow" id="slide-next" aria-label="Next slide">
-                &#10095;
-              </button>
-            </div>
-
-            <!-- Slide Pagination Dots -->
-            <div class="slideshow-dots" role="tablist" aria-label="Slideshow pagination">
-              <button type="button" class="slideshow-dot" role="tab" aria-selected="true" aria-label="Slide 1: Classic Ankara Style" tabindex="0"></button>
-              <button type="button" class="slideshow-dot" role="tab" aria-selected="false" aria-label="Slide 2: Matching Two-Piece Set" tabindex="-1"></button>
-              <button type="button" class="slideshow-dot" role="tab" aria-selected="false" aria-label="Slide 3: Flowing Statement Dress" tabindex="-1"></button>
-            </div>
-
-            <!-- Accessible Slide Counter -->
-            <span class="slide-counter" id="slide-counter" aria-live="polite">1 of 3</span>
+        <!-- Signature Creations Slideshow — built dynamically from published products by slideshow.js -->
+        <div class="slideshow-wrapper reveal-on-scroll" id="fashion-slideshow" role="region" aria-roledescription="carousel" aria-label="Fashion Gallery Slideshow" aria-busy="true">
+          <!-- Slides, controls, and dots are injected by scripts/slideshow.js after loading products -->
+          <div class="slideshow-loading-placeholder" aria-hidden="true">
+            <div class="shimmer" style="width:100%;height:420px;border-radius:var(--radius-xl);"></div>
           </div>
         </div>
       </div>
@@ -371,10 +288,11 @@
          ====================================================================== -->
     <section class="section-wrapper story-section" id="designer-story" aria-labelledby="story-title">
       <div class="container story-grid">
-        <!-- Visual Reference Collage -->
+        <!-- Visual Reference Collage (src hydrated from siteSettings/about via main.js) -->
         <div class="story-visual reveal-on-scroll">
           <div class="story-visual-frame">
             <img 
+              id="about-collage-img"
               src="./ZARA_ASSETS/owner/owner-outfit-reference-collage.png" 
               alt="Designer and founder styling reference collage" 
               class="story-collage-img"
@@ -390,11 +308,11 @@
           <span class="section-tag">About the Brand</span>
           <h2 id="story-title">Meet the Designer</h2>
 
-          <p>
+          <p id="story-desc-1">
             ZARAFIED was created out of a genuine love for African textiles and modern style. Every piece is designed to help you feel confident, stylish, and truly yourself.
           </p>
 
-          <p>
+          <p id="story-desc-2">
             Whether you choose a ready-to-wear look or request a custom-made outfit, we put care into every detail—from the choice of fabrics to the final fit.
           </p>
 
@@ -499,6 +417,7 @@
         <div class="footer-col">
           <div style="display: flex; align-items: center; gap: 0.75rem;">
             <img 
+              id="footer-brand-logo"
               src="./ZARA_ASSETS/brand/zara-logo.png" 
               alt="ZARA Logo" 
               width="36" 
@@ -581,6 +500,7 @@
     >
       <div class="welcome-avatar-frame">
         <img 
+          id="welcome-avatar-img"
           src="./ZARA_ASSETS/owner/owner-portrait-yellow-outfit.jpg" 
           alt="Creative Director of ZARAFIED in an elegant yellow halter top" 
           class="welcome-avatar-img"

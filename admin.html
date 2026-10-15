@@ -29,7 +29,7 @@
       <div class="admin-login-header">
         <img src="./ZARA_ASSETS/brand/zara-logo.png" alt="ZARAFIED Logo" class="admin-login-logo">
         <h1 class="admin-login-title">Admin Portal</h1>
-        <p class="admin-login-subtitle">Sign in to manage the ZARAFIED product catalogue.</p>
+        <p class="admin-login-subtitle">Sign in to manage the ZARAFIED store.</p>
       </div>
 
       <div class="admin-alert admin-alert-error" id="login-error-alert" style="display: none;"></div>
@@ -94,11 +94,11 @@
 
     <!-- Main Admin Workspace -->
     <main class="admin-main-content">
-      <!-- Role verification warning (shown if user logged in but lacks { admin: true } custom claim) -->
+      <!-- Role verification warning -->
       <div class="admin-alert admin-alert-warning" id="admin-role-warning" style="display: none;">
         <strong>Access Restricted:</strong> Your account is signed in, but the administrator custom claim has not been provisioned yet.
         <br>
-        To enable full write access, store operations must run: <code>node scripts/grant-admin.cjs</code> in the workspace.
+        To enable full write access, run: <code>node scripts/grant-admin.cjs</code> in the workspace.
       </div>
 
       <!-- Stats Summary -->
@@ -115,51 +115,329 @@
           <div class="admin-stat-label">Drafts (Hidden)</div>
           <div class="admin-stat-val" id="stat-draft-products" style="color: #E65100;">0</div>
         </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-label">Media Assets</div>
+          <div class="admin-stat-val" id="stat-total-media" style="color: var(--color-berry);">0</div>
+        </div>
       </div>
 
-      <!-- Toolbar -->
-      <div class="admin-toolbar">
-        <div>
-          <h2 class="admin-toolbar-title">Product Catalogue</h2>
-          <p style="color: var(--color-muted-text); font-size: var(--text-sm);">
-            Manage ready-to-wear pieces, custom couture entries, and published statuses.
+      <!-- Tab Navigation -->
+      <div class="admin-tabs-bar" role="tablist" aria-label="Dashboard sections">
+        <button type="button" class="admin-tab active" id="tab-products" role="tab" aria-selected="true" aria-controls="panel-products">
+          🛍️ Products
+        </button>
+        <button type="button" class="admin-tab" id="tab-media" role="tab" aria-selected="false" aria-controls="panel-media">
+          🖼️ Media Library
+        </button>
+        <button type="button" class="admin-tab" id="tab-settings" role="tab" aria-selected="false" aria-controls="panel-settings">
+          ⚙️ Website Settings
+        </button>
+        <button type="button" class="admin-tab" id="tab-gallery" role="tab" aria-selected="false" aria-controls="panel-gallery">
+          🎞️ Gallery Settings
+        </button>
+      </div>
+
+      <!-- ===== TAB PANEL 1: PRODUCTS ===== -->
+      <div class="admin-tab-panel" id="panel-products" role="tabpanel" aria-labelledby="tab-products">
+        <!-- Toolbar -->
+        <div class="admin-toolbar">
+          <div>
+            <h2 class="admin-toolbar-title">Product Catalogue</h2>
+            <p style="color: var(--color-muted-text); font-size: var(--text-sm);">
+              Manage ready-to-wear pieces, custom couture entries, and published statuses. Published products automatically appear in the Shop and Signature Creations gallery.
+            </p>
+          </div>
+          <div class="admin-toolbar-actions">
+            <button type="button" class="btn btn-primary" id="btn-add-product">
+              <span>+</span> Add New Outfit
+            </button>
+          </div>
+        </div>
+
+        <!-- Uncatalogued photos notification banner -->
+        <div id="uncatalogued-banner" class="admin-alert admin-alert-warning" style="display:none; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+          <span>💡 <strong>Uncatalogued Fashion Photos Found:</strong> Static lookbook images are available to be imported into the shop catalogue.</span>
+          <button type="button" class="btn btn-outline-sm" id="btn-view-uncatalogued" style="background:#fff;">Review in Media Library &rarr;</button>
+        </div>
+
+        <!-- Product Table -->
+        <div class="admin-table-wrapper">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>Outfit Title</th>
+                <th>Category</th>
+                <th>Price (NGN)</th>
+                <th>Availability</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-products-tbody">
+              <tr>
+                <td colspan="7" style="text-align: center; padding: 40px; color: var(--color-muted-text);">
+                  Loading product catalogue...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== TAB PANEL 2: MEDIA LIBRARY ===== -->
+      <div class="admin-tab-panel" id="panel-media" role="tabpanel" aria-labelledby="tab-media" style="display:none;">
+        <div class="admin-toolbar">
+          <div>
+            <h2 class="admin-toolbar-title">Website Media Library</h2>
+            <p style="color: var(--color-muted-text); font-size: var(--text-sm);">
+              Centralized repository for all brand assets, portraits, fashion lookbooks, and product photography. Assign roles, manage usages, and upload new compressed assets.
+            </p>
+          </div>
+          <div class="admin-toolbar-actions">
+            <button type="button" class="btn btn-primary" id="btn-open-media-upload">
+              <span>+</span> Upload New Asset
+            </button>
+          </div>
+        </div>
+
+        <!-- Media Filter Bar -->
+        <div class="media-filter-bar">
+          <button type="button" class="media-filter-pill active" data-role="all">All Assets (<span id="media-count-all">0</span>)</button>
+          <button type="button" class="media-filter-pill" data-role="product">Products</button>
+          <button type="button" class="media-filter-pill" data-role="brand">Brand &amp; Logo</button>
+          <button type="button" class="media-filter-pill" data-role="homepage">Hero &amp; Homepage</button>
+          <button type="button" class="media-filter-pill" data-role="welcome">Welcome Card</button>
+          <button type="button" class="media-filter-pill" data-role="about">About Designer</button>
+          <button type="button" class="media-filter-pill" data-role="gallery">Signature Gallery</button>
+        </div>
+
+        <!-- Media Grid -->
+        <div class="media-grid" id="media-library-grid">
+          <p style="color: var(--color-muted-text); padding: 40px; text-align: center; grid-column: 1 / -1;">
+            Loading media assets...
           </p>
         </div>
-        <div class="admin-toolbar-actions">
-          <button type="button" class="btn btn-primary" id="btn-add-product">
-            <span>+</span> Add New Outfit
-          </button>
+      </div>
+
+      <!-- ===== TAB PANEL 3: WEBSITE SETTINGS ===== -->
+      <div class="admin-tab-panel" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" style="display:none;">
+        <div class="admin-toolbar">
+          <div>
+            <h2 class="admin-toolbar-title">Website Content Settings</h2>
+            <p style="color: var(--color-muted-text); font-size: var(--text-sm);">
+              Manage hero portrait &amp; copy, about section, welcome card, brand logo, and contact info. Changes update the live site instantly without redeployment.
+            </p>
+          </div>
+        </div>
+
+        <!-- Settings Sections Grid -->
+        <div class="admin-settings-grid">
+
+          <!-- Hero Section -->
+          <div class="admin-settings-card" id="settings-hero-card">
+            <h3 class="admin-settings-heading">🦸 Homepage Hero Section</h3>
+            <p class="admin-settings-desc">The primary portrait and headline on the homepage. Currently: <strong id="hero-current-label">Loading…</strong></p>
+            <div class="settings-preview-row">
+              <img id="hero-preview-thumb" src="" alt="Hero preview" class="settings-thumb" style="display:none;">
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label" for="hero-image-input">Replace Hero Image</label>
+              <div class="upload-dropzone upload-dropzone-sm" id="hero-dropzone">
+                <input type="file" id="hero-image-input" accept="image/jpeg,image/png,image/webp" style="display:none;">
+                <div class="upload-dropzone-icon" style="font-size:1.5rem;">📷</div>
+                <p style="font-size:var(--text-sm); margin:4px 0;">Click to upload new hero portrait</p>
+                <div class="upload-status-text" id="hero-upload-status" style="display:none;"></div>
+                <div class="upload-progress-bar" id="hero-upload-progress" style="display:none;">
+                  <div class="upload-progress-fill" id="hero-upload-progress-fill"></div>
+                </div>
+              </div>
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label" for="hero-headline-input">Hero Headline (HTML allowed)</label>
+              <input type="text" id="hero-headline-input" class="admin-form-input" placeholder='Wear your <span class="highlight-word">story.</span>'>
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label" for="hero-desc-input">Hero Description</label>
+              <textarea id="hero-desc-input" class="admin-form-textarea" rows="3" placeholder="Beautiful outfits, made to express your style..."></textarea>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="btn-save-hero-settings">Save Hero Content</button>
+            <div class="admin-alert admin-alert-success" id="hero-settings-success" style="display:none; margin-top:8px;">Hero content saved!</div>
+          </div>
+
+          <!-- About/Story Section -->
+          <div class="admin-settings-card" id="settings-about-card">
+            <h3 class="admin-settings-heading">👤 About Section</h3>
+            <p class="admin-settings-desc">The founder story and collage in the "Meet the Designer" section. Currently: <strong id="about-current-label">Loading…</strong></p>
+            <div class="settings-preview-row">
+              <img id="about-preview-thumb" src="" alt="About preview" class="settings-thumb" style="display:none;">
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label" for="about-image-input">Replace About Image</label>
+              <div class="upload-dropzone upload-dropzone-sm" id="about-dropzone">
+                <input type="file" id="about-image-input" accept="image/jpeg,image/png,image/webp" style="display:none;">
+                <div class="upload-dropzone-icon" style="font-size:1.5rem;">📷</div>
+                <p style="font-size:var(--text-sm); margin:4px 0;">Click to upload new about image</p>
+                <div class="upload-status-text" id="about-upload-status" style="display:none;"></div>
+                <div class="upload-progress-bar" id="about-upload-progress" style="display:none;">
+                  <div class="upload-progress-fill" id="about-upload-progress-fill"></div>
+                </div>
+              </div>
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label" for="about-heading-input">Heading</label>
+              <input type="text" id="about-heading-input" class="admin-form-input" placeholder="Meet the Designer">
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label" for="about-p1-input">Paragraph 1</label>
+              <textarea id="about-p1-input" class="admin-form-textarea" rows="2" placeholder="ZARAFIED was created out of a genuine love..."></textarea>
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label" for="about-p2-input">Paragraph 2</label>
+              <textarea id="about-p2-input" class="admin-form-textarea" rows="2" placeholder="Whether you choose a ready-to-wear look..."></textarea>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="btn-save-about-settings">Save About Section</button>
+            <div class="admin-alert admin-alert-success" id="about-settings-success" style="display:none; margin-top:8px;">About section saved!</div>
+          </div>
+
+          <!-- Welcome Card Section -->
+          <div class="admin-settings-card" id="settings-welcome-card">
+            <h3 class="admin-settings-heading">💬 Welcome Card</h3>
+            <p class="admin-settings-desc">Controls the floating welcome card shown to first-time visitors.</p>
+            <div class="settings-preview-row">
+              <img id="welcome-preview-thumb" src="" alt="Welcome card preview" class="settings-thumb" style="display:none;">
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label" for="welcome-image-input">Replace Portrait</label>
+              <div class="upload-dropzone upload-dropzone-sm" id="welcome-dropzone">
+                <input type="file" id="welcome-image-input" accept="image/jpeg,image/png,image/webp" style="display:none;">
+                <div class="upload-dropzone-icon" style="font-size:1.5rem;">📷</div>
+                <p style="font-size:var(--text-sm); margin:4px 0;">Click to upload welcome portrait</p>
+                <div class="upload-status-text" id="welcome-upload-status" style="display:none;"></div>
+                <div class="upload-progress-bar" id="welcome-upload-progress" style="display:none;">
+                  <div class="upload-progress-fill" id="welcome-upload-progress-fill"></div>
+                </div>
+              </div>
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label" for="welcome-heading-input">Card Heading</label>
+              <input type="text" id="welcome-heading-input" class="admin-form-input" placeholder="Welcome to ZARAFIED">
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label" for="welcome-body-input">Card Body Text</label>
+              <textarea id="welcome-body-input" class="admin-form-textarea" rows="3" placeholder="Looking for ready-to-wear styles…"></textarea>
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label" for="welcome-linklabel-input">WhatsApp Link Label</label>
+              <input type="text" id="welcome-linklabel-input" class="admin-form-input" placeholder="Chat on WhatsApp →">
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label" style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" id="welcome-enabled-input" checked> Show welcome card to visitors
+              </label>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="btn-save-welcome-settings">Save Welcome Card</button>
+            <div class="admin-alert admin-alert-success" id="welcome-settings-success" style="display:none; margin-top:8px;">Saved successfully.</div>
+          </div>
+
+          <!-- Brand Logo Section -->
+          <div class="admin-settings-card" id="settings-logo-card">
+            <h3 class="admin-settings-heading">🎨 Brand Logo &amp; Favicon</h3>
+            <p class="admin-settings-desc">The logo appears in the header, footer, and browser tab. Replaces all instances consistently.</p>
+            <div class="settings-preview-row">
+              <img id="logo-preview-thumb" src="./ZARA_ASSETS/brand/zara-logo.png" alt="Current logo" class="settings-thumb" style="display:block; background:#fff; padding:4px; border-radius:8px;">
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label" for="logo-image-input">Upload New Brand Logo</label>
+              <div class="upload-dropzone upload-dropzone-sm" id="logo-dropzone">
+                <input type="file" id="logo-image-input" accept="image/jpeg,image/png,image/webp" style="display:none;">
+                <div class="upload-dropzone-icon" style="font-size:1.5rem;">📷</div>
+                <p style="font-size:var(--text-sm); margin:4px 0;">Click to upload new logo (PNG/WebP/JPEG)</p>
+                <div class="upload-status-text" id="logo-upload-status" style="display:none;"></div>
+                <div class="upload-progress-bar" id="logo-upload-progress" style="display:none;">
+                  <div class="upload-progress-fill" id="logo-upload-progress-fill"></div>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="btn-save-brand-settings">Save Brand Logo</button>
+            <div class="admin-alert admin-alert-success" id="brand-settings-success" style="display:none; margin-top:8px;">Brand logo updated!</div>
+          </div>
+
+          <!-- Contact & Studio Info Section -->
+          <div class="admin-settings-card" id="settings-contact-card">
+            <h3 class="admin-settings-heading">📍 Contact &amp; Studio Info</h3>
+            <p class="admin-settings-desc">Official contact details displayed across the website and footer.</p>
+            <div class="admin-form-group">
+              <label class="admin-form-label" for="contact-whatsapp-input">WhatsApp Phone Number</label>
+              <input type="text" id="contact-whatsapp-input" class="admin-form-input" placeholder="2348143049193">
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label" for="contact-email-input">Official Email</label>
+              <input type="email" id="contact-email-input" class="admin-form-input" placeholder="Janetzara97@gmail.com">
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-form-label" for="contact-address-input">Studio Location</label>
+              <input type="text" id="contact-address-input" class="admin-form-input" placeholder="Ogborhill, Aba, Abia State, Nigeria">
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="btn-save-contact-settings">Save Contact Info</button>
+            <div class="admin-alert admin-alert-success" id="contact-settings-success" style="display:none; margin-top:8px;">Contact info saved!</div>
+          </div>
+
         </div>
       </div>
 
-      <!-- Product Table -->
-      <div class="admin-table-wrapper">
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>Image</th>
-              <th>Outfit Title</th>
-              <th>Category</th>
-              <th>Price (NGN)</th>
-              <th>Availability</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="admin-products-tbody">
-            <tr>
-              <td colspan="7" style="text-align: center; padding: 40px; color: var(--color-muted-text);">
-                Loading product catalogue...
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- ===== TAB PANEL 4: GALLERY SETTINGS ===== -->
+      <div class="admin-tab-panel" id="panel-gallery" role="tabpanel" aria-labelledby="tab-gallery" style="display:none;">
+        <div class="admin-toolbar">
+          <div>
+            <h2 class="admin-toolbar-title">Gallery Settings</h2>
+            <p style="color: var(--color-muted-text); font-size: var(--text-sm);">
+              The Signature Creations gallery is automatically populated from all published products. Configure slideshow behaviour here.
+            </p>
+          </div>
+          <div class="admin-toolbar-actions">
+            <button type="button" class="btn btn-primary btn-sm" id="btn-save-gallery-settings">Save Gallery Settings</button>
+          </div>
+        </div>
+
+        <div class="admin-settings-grid" style="grid-template-columns: 1fr 1fr;">
+          <div class="admin-settings-card">
+            <h3 class="admin-settings-heading">⏱️ Auto-advance Interval</h3>
+            <p class="admin-settings-desc">How many seconds each slide stays visible before advancing (minimum: 1, standard: 3).</p>
+            <div class="admin-form-group">
+              <label class="admin-form-label" for="gallery-interval-input">Seconds between slides</label>
+              <input type="number" id="gallery-interval-input" class="admin-form-input" min="1" max="30" value="3">
+            </div>
+          </div>
+          <div class="admin-settings-card">
+            <h3 class="admin-settings-heading">🔢 Max Gallery Slides</h3>
+            <p class="admin-settings-desc">Maximum number of products shown in the gallery slideshow (1–50).</p>
+            <div class="admin-form-group">
+              <label class="admin-form-label" for="gallery-max-slides-input">Max slides to display</label>
+              <input type="number" id="gallery-max-slides-input" class="admin-form-input" min="1" max="50" value="20">
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-settings-card" style="margin-top:var(--space-xl);">
+          <h3 class="admin-settings-heading">📋 Gallery Source</h3>
+          <p class="admin-settings-desc">
+            All <strong>published</strong> products with a main image automatically appear in the Signature Creations gallery in reverse-chronological order (newest first).
+            To remove a product from the gallery, <strong>unpublish it</strong> from the Products tab.
+          </p>
+          <div id="gallery-product-list" style="margin-top: var(--space-md);">
+            <p style="color: var(--color-muted-text);">Loading published products…</p>
+          </div>
+        </div>
+
+        <div class="admin-alert admin-alert-success" id="gallery-settings-success" style="display:none; margin-top:var(--space-md);">Gallery settings saved.</div>
       </div>
+
     </main>
   </div>
 
   <!-- ========================================================================
-       MODAL: ADD / EDIT PRODUCT
+       MODAL 1: ADD / EDIT PRODUCT
        ======================================================================== -->
   <div class="admin-modal-backdrop" id="product-modal" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="admin-modal-card">
@@ -196,7 +474,7 @@
               <select id="form-category" class="admin-form-select" required>
                 <option value="ready-to-wear">Ready-to-Wear</option>
                 <option value="two-piece">Two-Piece Set</option>
-                <option value="gowns">Gowns & Dresses</option>
+                <option value="gowns">Gowns &amp; Dresses</option>
                 <option value="bespoke">Custom Design / Bespoke</option>
               </select>
             </div>
@@ -216,7 +494,7 @@
             <div class="admin-form-group">
               <label class="admin-form-label" for="form-status">Publication Status</label>
               <select id="form-status" class="admin-form-select">
-                <option value="published">Published (Visible in Shop)</option>
+                <option value="published">Published (Visible in Shop &amp; Gallery)</option>
                 <option value="draft">Draft (Hidden from Public)</option>
               </select>
             </div>
@@ -237,7 +515,7 @@
             </div>
           </div>
 
-          <!-- Cloudinary Image Upload with Automatic Browser Optimization -->
+          <!-- Cloudinary Image Upload -->
           <div class="admin-form-group">
             <label class="admin-form-label">Primary Outfit Photograph (Auto-optimized &le; 4.5 MB - JPEG/PNG/WebP) *</label>
             <div class="upload-dropzone" id="image-dropzone">
@@ -246,19 +524,12 @@
               <p style="font-weight: 600; margin-bottom: 4px;">Click or drag fashion photograph here</p>
               <p style="font-size: var(--text-xs); color: var(--color-muted-text);">Automatically compressed in browser &rarr; Cloudinary (zara/products)</p>
 
-              <!-- Upload & Compression Status -->
               <div class="upload-status-text" id="upload-status-text" style="display: none;"></div>
-
               <div class="upload-progress-bar" id="upload-progress" style="display: none;">
                 <div class="upload-progress-fill" id="upload-progress-fill"></div>
               </div>
-
-              <!-- Optimization Stats Badge (e.g. Original: 7.2 MB → Optimized: 1.4 MB (80.6% smaller)) -->
               <div class="upload-compression-badge" id="upload-compression-badge" style="display: none;"></div>
-
-              <!-- Upload/Compression Error Box -->
               <div class="upload-inline-error" id="upload-error-box" style="display: none;"></div>
-
               <div class="upload-preview-frame" id="upload-preview-container" style="display: none;">
                 <img src="" alt="Uploaded Preview" class="upload-preview-img" id="upload-preview-img">
               </div>
@@ -275,7 +546,73 @@
   </div>
 
   <!-- ========================================================================
-       MODAL: DELETE CONFIRMATION
+       MODAL 2: UPLOAD TO MEDIA LIBRARY
+       ======================================================================== -->
+  <div class="admin-modal-backdrop" id="media-upload-modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="admin-modal-card">
+      <div class="admin-modal-header">
+        <h3 class="admin-modal-title">Upload Asset to Media Library</h3>
+        <button type="button" class="modal-close-btn" id="modal-media-close">&times;</button>
+      </div>
+
+      <div class="admin-modal-body">
+        <div class="admin-form-group">
+          <label class="admin-form-label" for="media-upload-title">Asset Name / Label *</label>
+          <input type="text" id="media-upload-title" class="admin-form-input" placeholder="e.g. Summer Lookbook Editorial" required>
+        </div>
+
+        <div class="admin-form-group">
+          <label class="admin-form-label">Assign Asset Roles</label>
+          <div style="display:flex; flex-wrap:wrap; gap:var(--space-sm); margin-top:4px;" id="media-upload-roles">
+            <label><input type="checkbox" value="homepage" name="media-roles"> Hero &amp; Homepage</label>
+            <label><input type="checkbox" value="welcome" name="media-roles"> Welcome Card</label>
+            <label><input type="checkbox" value="about" name="media-roles"> About Section</label>
+            <label><input type="checkbox" value="brand" name="media-roles"> Brand / Logo</label>
+            <label><input type="checkbox" value="gallery" name="media-roles"> Signature Gallery</label>
+            <label><input type="checkbox" value="general" name="media-roles" checked> General Asset</label>
+          </div>
+        </div>
+
+        <div class="admin-form-group">
+          <label class="admin-form-label" for="media-quick-assign">Immediate Placement (Optional)</label>
+          <select id="media-quick-assign" class="admin-form-select">
+            <option value="none">Keep in Media Library Only</option>
+            <option value="hero">Set as active Hero Portrait</option>
+            <option value="welcome">Set as active Welcome Portrait</option>
+            <option value="about">Set as active About Section Image</option>
+            <option value="brand">Set as active Brand Logo</option>
+          </select>
+        </div>
+
+        <div class="admin-form-group">
+          <label class="admin-form-label">Photograph File (Auto-compressed &le; 4.5 MB) *</label>
+          <div class="upload-dropzone" id="media-library-dropzone">
+            <input type="file" id="media-file-input" accept="image/jpeg,image/png,image/webp" style="display:none;">
+            <div class="upload-dropzone-icon">🖼️</div>
+            <p style="font-weight:600; margin-bottom:4px;">Click or drag image file here</p>
+            <p style="font-size:var(--text-xs); color:var(--color-muted-text);">Optimized &amp; compressed in browser &rarr; Cloudinary (zara/media)</p>
+
+            <div class="upload-status-text" id="media-upload-status" style="display:none;"></div>
+            <div class="upload-progress-bar" id="media-upload-progress" style="display:none;">
+              <div class="upload-progress-fill" id="media-upload-progress-fill"></div>
+            </div>
+            <div class="upload-compression-badge" id="media-compression-badge" style="display:none;"></div>
+            <div class="upload-preview-frame" id="media-preview-container" style="display:none;">
+              <img src="" alt="Media Preview" class="upload-preview-img" id="media-preview-img">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-modal-footer">
+        <button type="button" class="btn btn-outline-sm" id="btn-cancel-media-upload">Cancel</button>
+        <button type="button" class="btn btn-primary btn-sm" id="btn-save-media-asset">Save to Library</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 3: DELETE CONFIRMATION (Product or Media Asset)
        ======================================================================== -->
   <div class="admin-modal-backdrop" id="delete-modal" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="admin-modal-card" style="max-width: 440px;">
@@ -284,9 +621,10 @@
         <button type="button" class="modal-close-btn" id="modal-delete-close">&times;</button>
       </div>
       <div class="admin-modal-body">
-        <p>Are you sure you want to permanently delete <strong id="delete-product-title"></strong> from the catalogue?</p>
+        <p>Are you sure you want to permanently delete <strong id="delete-product-title"></strong>?</p>
+        <div id="delete-warning-note" style="display:none;" class="admin-alert admin-alert-warning"></div>
         <p style="font-size: var(--text-xs); color: var(--color-muted-text); margin-top: 8px;">
-          This removes the outfit from Firestore and the public storefront. Uploaded media assets in Cloudinary are retained in the asset library.
+          This removes the item from Firestore. Cloudinary storage is preserved.
         </p>
       </div>
       <div class="admin-modal-footer">
