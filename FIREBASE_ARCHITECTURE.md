@@ -15,8 +15,8 @@ This document establishes the official database schema, security access model, m
 | **Registered Web App** | `zarafiedstore` (`1:370409615096:web:620bbc0b6277358b02150d`) | Active & Integrated |
 | **Preferred Hosting Site** | `zarafiedstore` (`https://zarafiedstore.web.app`) | Reserved & Created |
 | **Cloud Firestore** | Database: `(default)` in `europe-west1` (`FIRESTORE_NATIVE`) | **Active & Live**; Production Rules Deployed & Verified |
-| **Firebase Storage** | Bucket: `zarastore-17250.firebasestorage.app` | API Enabled; Rules Prepared; Awaiting Console One-Click Initialization |
-| **Firebase Authentication** | Provider: Email/Password (Admin: `Janetzara97@gmail.com`) | API Enabled; Awaiting Console One-Click Initialization |
+| **Firebase Storage** | Bucket: `zarastore-17250.firebasestorage.app` | API Enabled; Rules Prepared; Blocked by Google requirement to link billing account (Blaze plan) |
+| **Firebase Authentication** | Provider: Email/Password (Admin: `Janetzara97@gmail.com`) | **Active & Live**; Email/Password Provider Enabled; `scripts/grant-admin.cjs` prepared |
 
 ---
 
@@ -265,20 +265,21 @@ Public URL: `https://zarafiedstore.web.app`
 
 ---
 
-## 7. Remaining Manual Firebase Console Actions
+## 7. Operational Status & Remaining Steps
 
-1. **Cloud Firestore Provisioning (COMPLETED):**
+1. **Cloud Firestore Provisioning (COMPLETED & VERIFIED):**
    - Active database: `projects/zarastore-17250/databases/(default)`
    - Location: `europe-west1` (Belgium, optimal low latency for West Africa & Nigeria)
    - Rules: Deployed from `firestore.rules` and verified via automated test suite.
-2. **Firebase Storage Activation (One-Click Console Action):**
-   - Go to [Firebase Console](https://console.firebase.google.com/project/zarastore-17250/storage) -> Build -> Storage -> Click **Get started**.
-   - Select region matching Firestore (`europe-west1`).
-   - Once clicked, run `npx firebase-tools deploy --only storage --project zarastore-17250` to apply `storage.rules`.
-3. **Firebase Authentication Initialization (One-Click Console Action):**
-   - Go to [Firebase Console](https://console.firebase.google.com/project/zarastore-17250/authentication) -> Build -> Authentication -> Click **Get started**.
-   - Under **Sign-in method**, enable **Email/Password**.
-   - Create administrator account for `Janetzara97@gmail.com`.
-4. **Grant Custom Admin Claim:**
-   - Run the custom claim provisioning script in a secure private Node.js environment to assign `{ admin: true }` to `Janetzara97@gmail.com`.
+2. **Firebase Authentication Initialization (COMPLETED & VERIFIED):**
+   - Tenant: Active and operational on `zarastore-17250`.
+   - Sign-in Provider: **Email/Password** is **ENABLED** and verified.
+   - Admin Provisioning: Once administrator `Janetzara97@gmail.com` creates their account in the Console, run `node scripts/grant-admin.cjs` to cryptographically assign the `{ admin: true }` custom claim.
+3. **Firebase Storage (Blocked by Google Billing Account Requirement):**
+   - Exact Blocker: Google Firebase now requires a billing account to be linked (upgrade to the Blaze pay-as-you-go plan) before creating a Cloud Storage bucket on new projects. The Firebase Console explicitly requires: *"To use Storage, upgrade your project's pricing plan"* at [https://console.firebase.google.com/project/zarastore-17250/storage](https://console.firebase.google.com/project/zarastore-17250/storage).
+   - Next Action: When the store owner is ready to link a payment/billing account, click **Upgrade project** in the Console (Storage includes generous free-tier quotas: 5GB storage, 1GB/day downloads, 20k uploads/day under Blaze).
+   - Once upgraded and the bucket is created, run:
+     ```bash
+     npx firebase-tools deploy --only storage --project zarastore-17250
+     ```
 

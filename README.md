@@ -73,8 +73,10 @@ Open `http://localhost:8085` in any modern browser.
 - **Firebase Project ID:** `zarastore-17250` (Display name: `zarastore`, Project Number: `370409615096`)
 - **Registered Web App:** `zarafiedstore` (`1:370409615096:web:620bbc0b6277358b02150d`)
 - **Cloud Firestore:** Database `(default)` in `europe-west1` (`FIRESTORE_NATIVE`) — **Live & Active**
+- **Firebase Authentication:** Tenant Active & Live; **Email/Password** Provider **ENABLED**; `scripts/grant-admin.cjs` prepared for `Janetzara97@gmail.com`
+- **Firebase Storage:** API enabled; rules prepared; bucket creation blocked by Google Cloud requirement to link a billing account (Blaze plan)
 - **Security Rules:**
   - `firestore.rules`: **Deployed to `zarastore-17250` & Verified**; public read on published products/portfolio and approved reviews; admin-only writes; orders and enquiries kept strictly confidential.
   - `storage.rules`: Strict 5MB limit, `image/*` MIME check, admin-only write/delete for `/products/`, `/portfolio/`, and `/brand/`.
 - **Configured Hosting Site:** `zarafiedstore` -> [https://zarafiedstore.web.app](https://zarafiedstore.web.app) (Site created & verified; public deployment withheld pending Layer 3 approval).
-- Full architecture, schemas, and manual console checklist: See [FIREBASE_ARCHITECTURE.md](file:///c:/Users/COLLINS/Desktop/zarafied/FIREBASE_ARCHITECTURE.md).
+- Full architecture, schemas, and operational details: See [FIREBASE_ARCHITECTURE.md](file:///c:/Users/COLLINS/Desktop/zarafied/FIREBASE_ARCHITECTURE.md).
