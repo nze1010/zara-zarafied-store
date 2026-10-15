@@ -44,8 +44,8 @@
 4. **Simplified Collections Section:** Two clear cards for **Ready-to-Wear** (*"Explore available styles and find an outfit you love."* / *“Explore Styles”*) and **Custom Designs** (*"Have something special in mind? Let’s create an outfit that suits you."* / *“Discuss Your Design”*).
 5. **Personal Designer Story:** Warm, concise, and professional narrative introducing the founder and creative idea behind ZARAFIED with the single action *“Meet the Designer”*.
 6. **Customer Reviews Section:** Clean placeholder for upcoming verified client reviews with a warm invitation to share feedback (*no fabricated testimonials*).
-7. **Contact & Enquiries:** Direct WhatsApp chat action, studio email, and Lagos studio location note.
-8. **Compact Footer:** Clean essential navigation, direct WhatsApp/email contact, and copyright.
+7. **Contact & Enquiries:** Direct WhatsApp chat action (+234 814 304 9193), official email (Janetzara97@gmail.com), and Ogborhill, Aba, Abia State location note.
+8. **Compact Footer:** Clean essential navigation, direct WhatsApp/email contact, location, and copyright.
 9. **Dismissible Welcome Card:** Owner portrait thumbnail, non-blocking layout, dismissible button, displayed at most once per browsing session via `sessionStorage`, reduced-motion aware.
 
 ---
