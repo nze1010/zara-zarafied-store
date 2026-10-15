@@ -342,6 +342,7 @@
   height: auto;
   aspect-ratio: 1024 / 1280;
   object-fit: cover;
+  object-position: center 15%;
   display: block;
   transition: transform var(--transition-luxury);
 }
