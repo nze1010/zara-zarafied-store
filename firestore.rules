@@ -17,11 +17,6 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.token.admin == true;
     }
 
-    // Validate valid incoming timestamp
-    function isValidTimestamp(val) {
-      return val is timestamp;
-    }
-
     // =========================================================================
     // COLLECTION: products
     // Purpose: Store catalogue items, descriptions, prices, categories & images.

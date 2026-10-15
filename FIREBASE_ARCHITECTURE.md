@@ -14,9 +14,9 @@ This document establishes the official database schema, security access model, m
 | **Project Number** | `370409615096` | Active |
 | **Registered Web App** | `zarafiedstore` (`1:370409615096:web:620bbc0b6277358b02150d`) | Active & Integrated |
 | **Preferred Hosting Site** | `zarafiedstore` (`https://zarafiedstore.web.app`) | Reserved & Created |
-| **Cloud Firestore** | Collections: `products`, `portfolio`, `orders`, `customEnquiries`, `reviews`, `siteSettings` | Rules Prepared; Awaiting Console Location Selection |
-| **Firebase Storage** | Bucket: `zarastore-17250.firebasestorage.app` | Rules Prepared; Awaiting Console Activation |
-| **Firebase Authentication** | Provider: Email/Password (Admin: `Janetzara97@gmail.com`) | Awaiting Console Activation |
+| **Cloud Firestore** | Database: `(default)` in `europe-west1` (`FIRESTORE_NATIVE`) | **Active & Live**; Production Rules Deployed & Verified |
+| **Firebase Storage** | Bucket: `zarastore-17250.firebasestorage.app` | API Enabled; Rules Prepared; Awaiting Console One-Click Initialization |
+| **Firebase Authentication** | Provider: Email/Password (Admin: `Janetzara97@gmail.com`) | API Enabled; Awaiting Console One-Click Initialization |
 
 ---
 
@@ -267,17 +267,18 @@ Public URL: `https://zarafiedstore.web.app`
 
 ## 7. Remaining Manual Firebase Console Actions
 
-1. **Cloud Firestore Provisioning:**
-   - Go to [Firebase Console](https://console.firebase.google.com/project/zarastore-17250/firestore) -> Build -> Firestore Database -> Create database.
-   - Recommended Location: `europe-west1` (Belgium) or `europe-west2` (London) for optimal latency to Nigeria and West Africa.
-   - Security Rules: Start in production mode (our repository `firestore.rules` will govern access).
-2. **Firebase Storage Activation:**
-   - Go to [Firebase Console](https://console.firebase.google.com/project/zarastore-17250/storage) -> Build -> Storage -> Get started.
-   - Location: Align with Firestore region (`europe-west1` or `eur3`).
-3. **Firebase Authentication Provider:**
-   - Go to [Firebase Console](https://console.firebase.google.com/project/zarastore-17250/authentication) -> Build -> Authentication -> Get started.
-   - Enable **Email/Password** sign-in method.
-   - Create initial administrator account for `Janetzara97@gmail.com`.
+1. **Cloud Firestore Provisioning (COMPLETED):**
+   - Active database: `projects/zarastore-17250/databases/(default)`
+   - Location: `europe-west1` (Belgium, optimal low latency for West Africa & Nigeria)
+   - Rules: Deployed from `firestore.rules` and verified via automated test suite.
+2. **Firebase Storage Activation (One-Click Console Action):**
+   - Go to [Firebase Console](https://console.firebase.google.com/project/zarastore-17250/storage) -> Build -> Storage -> Click **Get started**.
+   - Select region matching Firestore (`europe-west1`).
+   - Once clicked, run `npx firebase-tools deploy --only storage --project zarastore-17250` to apply `storage.rules`.
+3. **Firebase Authentication Initialization (One-Click Console Action):**
+   - Go to [Firebase Console](https://console.firebase.google.com/project/zarastore-17250/authentication) -> Build -> Authentication -> Click **Get started**.
+   - Under **Sign-in method**, enable **Email/Password**.
+   - Create administrator account for `Janetzara97@gmail.com`.
 4. **Grant Custom Admin Claim:**
    - Run the custom claim provisioning script in a secure private Node.js environment to assign `{ admin: true }` to `Janetzara97@gmail.com`.
 
