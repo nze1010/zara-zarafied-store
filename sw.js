@@ -3,7 +3,7 @@
  * Lightweight PWA Service Worker
  */
 
-const CACHE_NAME = 'zarafied-v8';
+const CACHE_NAME = 'zarafied-v9';
 const CORE_ASSETS = [
   './',
   './index.html',

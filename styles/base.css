@@ -47,7 +47,7 @@ h5 { font-size: var(--font-size-lg); }
 h6 { font-size: var(--font-size-md); }
 
 p {
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-sm);
   color: var(--color-muted-text);
 }
 
@@ -142,14 +142,7 @@ ul, ol {
 }
 
 .section-wrapper {
-  padding-top: var(--space-3xl);
-  padding-bottom: var(--space-3xl);
+  padding-top: clamp(1.75rem, 1.25rem + 1.8vw, 3rem);
+  padding-bottom: clamp(1.75rem, 1.25rem + 1.8vw, 3rem);
   position: relative;
-}
-
-@media (min-width: 768px) {
-  .section-wrapper {
-    padding-top: var(--space-4xl);
-    padding-bottom: var(--space-4xl);
-  }
 }
