@@ -48,24 +48,37 @@ function renderShopShell(container) {
       <!-- Loading skeletons rendered initially -->
       ${renderSkeletons(3)}
     </div>
+  `;
 
-    <!-- Accessible Product Detail Modal -->
-    <div class="product-modal-backdrop" id="product-detail-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modal-product-title">
+  // Ensure modal backdrop is mounted directly to document.body so that fixed positioning
+  // is never trapped inside CSS transformed parent containers (.reveal-on-scroll)
+  let modal = document.getElementById('product-detail-modal');
+  if (!modal) {
+    const modalEl = document.createElement('div');
+    modalEl.className = 'product-modal-backdrop';
+    modalEl.id = 'product-detail-modal';
+    modalEl.setAttribute('aria-hidden', 'true');
+    modalEl.setAttribute('role', 'dialog');
+    modalEl.setAttribute('aria-modal', 'true');
+    modalEl.setAttribute('aria-labelledby', 'modal-product-title');
+    modalEl.innerHTML = `
       <div class="product-modal-card">
         <button type="button" class="modal-close-btn" id="modal-close-btn" aria-label="Close product details">&times;</button>
         <div class="modal-body" id="modal-body-content">
           <!-- Populated dynamically upon click -->
         </div>
       </div>
-    </div>
-  `;
+    `;
+    document.body.appendChild(modalEl);
+    modal = modalEl;
+  } else if (modal.parentElement !== document.body) {
+    document.body.appendChild(modal);
+  }
 
   // Modal close handlers
-  const modal = document.getElementById('product-detail-modal');
   const closeBtn = document.getElementById('modal-close-btn');
-
   closeBtn?.addEventListener('click', closeModal);
-  modal?.addEventListener('click', (e) => {
+  modal.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
   });
 
@@ -132,18 +145,18 @@ async function loadAndRenderProducts() {
 
     grid.innerHTML = products.map((product) => renderProductCard(product)).join('');
 
-    // Attach card quick-view event listeners
+    // Attach card quick-view event listeners on image, title, and button
     grid.querySelectorAll('.product-card').forEach((card) => {
       const productId = card.dataset.id;
-      const viewBtn = card.querySelector('.btn-view-product');
-      viewBtn?.addEventListener('click', () => openModal(productId));
       card.querySelector('.card-image-wrapper')?.addEventListener('click', () => openModal(productId));
+      card.querySelector('.product-title')?.addEventListener('click', () => openModal(productId));
+      card.querySelector('.btn-view-product')?.addEventListener('click', () => openModal(productId));
     });
   } catch (error) {
     grid.innerHTML = `
       <div class="shop-error-state">
         <p class="error-msg">Unable to load catalogue items right now.</p>
-        <button type="button" class="btn btn-outline-sm btn-retry" id="btn-retry-shop">Try Again</button>
+        <button type="button" class="btn btn-outline btn-sm btn-retry" id="btn-retry-shop">Try Again</button>
       </div>
     `;
     document.getElementById('btn-retry-shop')?.addEventListener('click', loadAndRenderProducts);
@@ -165,7 +178,7 @@ function renderProductCard(product) {
     made_to_order: 'Made to Order',
     out_of_stock: 'Sold Out'
   };
-  const availabilityBadge = availabilityLabels[product.availability] || 'Available';
+  const availabilityBadge = availabilityLabels[product.availability] || 'In Stock';
   const availabilityClass = product.availability === 'out_of_stock' ? 'badge-sold-out' : 'badge-available';
 
   const categoryLabels = {
@@ -178,7 +191,7 @@ function renderProductCard(product) {
 
   return `
     <article class="product-card" data-id="${product.id}">
-      <div class="card-image-wrapper">
+      <div class="card-image-wrapper" title="Click to view details for ${escapeHtml(product.title)}" tabindex="0" role="button" aria-label="View ${escapeHtml(product.title)}">
         <img 
           src="${imageUrl}" 
           alt="${escapeHtml(altText)}" 
@@ -189,9 +202,9 @@ function renderProductCard(product) {
       </div>
       <div class="product-card-content">
         <span class="product-category-tag">${escapeHtml(categoryLabel)}</span>
-        <h3 class="product-title">${escapeHtml(product.title)}</h3>
+        <h3 class="product-title" title="${escapeHtml(product.title)}" tabindex="0" role="button">${escapeHtml(product.title)}</h3>
         <div class="product-price">${formattedPrice}</div>
-        <button type="button" class="btn btn-outline-sm btn-view-product" aria-label="View details for ${escapeHtml(product.title)}">
+        <button type="button" class="btn btn-outline btn-sm btn-view-product" aria-label="View details for ${escapeHtml(product.title)}">
           View Outfit &rarr;
         </button>
       </div>
@@ -214,13 +227,54 @@ function openModal(productId) {
   const formattedPrice = formatCurrency(product.price);
   const images = [product.mainImage, ...(product.additionalImages || [])].filter(Boolean);
   const primaryImg = images[0]?.secure_url || images[0]?.url || './ZARA_ASSETS/fashion/signature-fashion-01-ankara.png';
+  let activeImageUrl = primaryImg;
 
-  const sizesHtml = product.availableSizes?.length 
-    ? `<div class="modal-sizes"><strong>Available Sizes:</strong> ${product.availableSizes.map(s => `<span class="size-pill">${escapeHtml(s)}</span>`).join(' ')}</div>` 
+  const availabilityLabels = {
+    in_stock: 'In Stock',
+    made_to_order: 'Made to Order',
+    out_of_stock: 'Sold Out'
+  };
+  const isOutOfStock = product.availability === 'out_of_stock';
+  const availabilityBadge = availabilityLabels[product.availability] || 'In Stock';
+  const availabilityClass = isOutOfStock ? 'badge-sold-out' : 'badge-available';
+
+  const categoryLabels = {
+    'ready-to-wear': 'Ready-to-Wear',
+    'two-piece': 'Two-Piece Set',
+    'gowns': 'Gown',
+    'bespoke': 'Custom Design'
+  };
+  const categoryLabel = categoryLabels[product.category] || product.category;
+
+  const hasSizes = Array.isArray(product.availableSizes) && product.availableSizes.length > 0;
+  let selectedSize = hasSizes && product.availableSizes.length === 1 ? product.availableSizes[0] : null;
+
+  const sizesHtml = hasSizes
+    ? `
+      <div class="modal-sizes-group">
+        <label class="modal-sizes-label">Available Sizes (Select One):</label>
+        <div class="modal-sizes-selector" role="radiogroup" aria-label="Available Sizes">
+          ${product.availableSizes.map(s => `
+            <button 
+              type="button" 
+              class="size-pill-btn${selectedSize === s ? ' is-selected' : ''}" 
+              data-size="${escapeHtml(s)}" 
+              role="radio" 
+              aria-checked="${selectedSize === s ? 'true' : 'false'}"
+            >
+              ${escapeHtml(s)}
+            </button>
+          `).join('')}
+        </div>
+        <div class="size-error-msg" id="modal-size-error" style="display:none;">
+          ⚠️ Please select a size before proceeding to shop.
+        </div>
+      </div>
+    `
     : '';
 
-  const orderMsg = encodeURIComponent(`Hello ZARAFIED, I am interested in purchasing: ${product.title} (${formattedPrice}). Could you please share delivery details?`);
-  const whatsappUrl = `https://wa.me/2348143049193?text=${orderMsg}`;
+  const buttonText = isOutOfStock ? 'Enquire on WhatsApp' : 'Shop Now';
+  const buttonClass = isOutOfStock ? 'btn btn-secondary btn-shop-now' : 'btn btn-whatsapp btn-shop-now';
 
   modalBody.innerHTML = `
     <div class="modal-grid">
@@ -240,17 +294,21 @@ function openModal(productId) {
       </div>
 
       <div class="modal-info">
-        <span class="badge badge-coral">${escapeHtml(product.category)}</span>
+        <div class="modal-availability-row">
+          <span class="badge badge-coral">${escapeHtml(categoryLabel)}</span>
+          <span class="badge ${availabilityClass}">${escapeHtml(availabilityBadge)}</span>
+        </div>
         <h2 class="modal-product-title" id="modal-product-title">${escapeHtml(product.title)}</h2>
         <div class="modal-price">${formattedPrice}</div>
-        <p class="modal-description">${escapeHtml(product.description || 'Handcrafted bespoke piece made with premium fabric and precision tailoring.')}</p>
+        <p class="modal-description">${escapeHtml(product.description || 'Handcrafted bespoke piece made with premium fabric, refined structure, and precision tailoring.')}</p>
+        
         ${sizesHtml}
         
         <div class="modal-actions-group">
-          <a href="${whatsappUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp" style="width: 100%;">
-            <span>&#9742;</span> Order on WhatsApp
-          </a>
-          <a href="mailto:Janetzara97@gmail.com?subject=Enquiry%20regarding%20${encodeURIComponent(product.title)}" class="btn btn-outline-sm" style="width: 100%; text-align: center;">
+          <button type="button" class="${buttonClass}" id="btn-modal-shop-now">
+            <span>💬</span> ${buttonText}
+          </button>
+          <a href="mailto:Janetzara97@gmail.com?subject=Enquiry%20regarding%20${encodeURIComponent(product.title)}" class="btn btn-outline btn-sm" style="width: 100%; text-align: center;">
             Email Fitting Enquiry
           </a>
         </div>
@@ -258,14 +316,80 @@ function openModal(productId) {
     </div>
   `;
 
-  // Attach thumbnail clicks
+  // Attach thumbnail clicks to switch image and track active image URL
   modalBody.querySelectorAll('.modal-thumb-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       modalBody.querySelectorAll('.modal-thumb-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       const activeImg = document.getElementById('modal-active-img');
       if (activeImg) activeImg.src = btn.dataset.src;
+      activeImageUrl = btn.dataset.src;
     });
+  });
+
+  // Attach size selection clicks
+  modalBody.querySelectorAll('.size-pill-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      modalBody.querySelectorAll('.size-pill-btn').forEach(b => {
+        b.classList.remove('is-selected');
+        b.setAttribute('aria-checked', 'false');
+      });
+      btn.classList.add('is-selected');
+      btn.setAttribute('aria-checked', 'true');
+      selectedSize = btn.dataset.size;
+      const errorMsg = document.getElementById('modal-size-error');
+      if (errorMsg) errorMsg.style.display = 'none';
+    });
+  });
+
+  // Attach "Shop Now" / "Enquire" click handler
+  const shopNowBtn = document.getElementById('btn-modal-shop-now');
+  shopNowBtn?.addEventListener('click', () => {
+    // If sizes are available on this product and none selected, prompt customer
+    if (hasSizes && !selectedSize && !isOutOfStock) {
+      const errorMsg = document.getElementById('modal-size-error');
+      if (errorMsg) {
+        errorMsg.style.display = 'block';
+        errorMsg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      return;
+    }
+
+    const resolvedImageUrl = activeImageUrl.startsWith('http')
+      ? activeImageUrl
+      : new URL(activeImageUrl, window.location.origin).href;
+
+    let message = '';
+    if (isOutOfStock) {
+      message = [
+        'Hello ZARAFIED STORE, I would like to enquire about this sold-out outfit:',
+        '',
+        `Product: ${product.title}`,
+        `Price: ${formattedPrice}`,
+        `Product image: ${resolvedImageUrl}`,
+        `Product reference: ${product.id}`,
+        '',
+        'Please confirm if this piece can be restocked or made to order.'
+      ].join('\n');
+    } else {
+      const lines = [
+        'Hello ZARAFIED STORE, I want to shop this outfit.',
+        '',
+        `Product: ${product.title}`,
+        `Price: ${formattedPrice}`
+      ];
+      if (selectedSize) {
+        lines.push(`Size: ${selectedSize}`);
+      }
+      lines.push(`Product image: ${resolvedImageUrl}`);
+      lines.push(`Product reference: ${product.id}`);
+      lines.push('');
+      lines.push('Please confirm availability and delivery details.');
+      message = lines.join('\n');
+    }
+
+    const whatsappUrl = `https://wa.me/2348143049193?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   });
 
   modal.classList.add('is-open');
