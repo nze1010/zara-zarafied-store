@@ -7,6 +7,7 @@
       "firestore.rules",
       "storage.rules",
       "FIREBASE_ARCHITECTURE.md",
+      "PRELAUNCH_AUDIT_REPORT.md",
       "**/.*",
       "**/node_modules/**"
     ],
