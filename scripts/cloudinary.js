@@ -129,3 +129,81 @@ export async function uploadImageToCloudinary(file, onProgress = null) {
     xhr.send(formData);
   });
 }
+
+/**
+ * Check if a URL points to a Cloudinary-hosted asset
+ * @param {string} url 
+ * @returns {boolean}
+ */
+export function isCloudinaryUrl(url) {
+  return Boolean(
+    url &&
+    typeof url === 'string' &&
+    url.includes('res.cloudinary.com') &&
+    url.includes('/image/upload/')
+  );
+}
+
+/**
+ * Safely generate an optimized Cloudinary delivery URL using supported transformations.
+ * Preserves aspect ratio with `c_limit` (never crops outfits).
+ * If the URL is not from Cloudinary, returns the raw URL untouched.
+ *
+ * @param {string} rawUrl - Cloudinary or local image URL
+ * @param {Object} [options]
+ * @param {number} [options.width] - Target width in pixels (e.g. 380, 600, 800)
+ * @param {string} [options.quality='auto'] - Cloudinary quality ('auto', 'auto:eco', 'auto:good')
+ * @param {string} [options.format='auto'] - Cloudinary format ('auto', 'webp', 'avif')
+ * @param {string} [options.crop='limit'] - Cloudinary crop mode ('limit', 'fit' - never crop outfits)
+ * @param {string|number} [options.dpr] - Device pixel ratio (e.g. 'auto')
+ * @returns {string} Optimised delivery URL
+ */
+export function buildOptimizedImageUrl(rawUrl, options = {}) {
+  if (!isCloudinaryUrl(rawUrl)) {
+    return rawUrl;
+  }
+
+  const {
+    width,
+    quality = 'auto',
+    format = 'auto',
+    crop = 'limit',
+    dpr
+  } = options;
+
+  const parts = rawUrl.split('/image/upload/');
+  const prefix = parts[0] + '/image/upload/';
+  let rest = parts.slice(1).join('/image/upload/');
+
+  // Strip any existing transformation segments before the public_id / version
+  rest = rest.replace(/^(?:(?:[a-z]{1,4}_[a-zA-Z0-9_.:-]+,?)+(\/|$))+/i, '');
+
+  const transformations = [];
+  if (crop) transformations.push(`c_${crop}`);
+  if (width && Number.isFinite(width)) transformations.push(`w_${Math.round(width)}`);
+  if (dpr) transformations.push(`dpr_${dpr}`);
+  if (quality) transformations.push(`q_${quality}`);
+  if (format) transformations.push(`f_${format}`);
+
+  if (transformations.length === 0) {
+    return `${prefix}${rest}`;
+  }
+
+  return `${prefix}${transformations.join(',')}/${rest}`;
+}
+
+/**
+ * Build responsive srcset string for Cloudinary images.
+ * Returns empty string if not a Cloudinary image.
+ *
+ * @param {string} rawUrl 
+ * @param {number[]} [widths=[360, 600, 900]]
+ * @returns {string}
+ */
+export function buildResponsiveSrcSet(rawUrl, widths = [360, 600, 900]) {
+  if (!isCloudinaryUrl(rawUrl)) return '';
+  return widths
+    .map(w => `${buildOptimizedImageUrl(rawUrl, { width: w })} ${w}w`)
+    .join(', ');
+}
+

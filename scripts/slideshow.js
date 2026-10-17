@@ -18,7 +18,8 @@
  */
 
 import { getPublishedProducts } from './products-service.js';
-import { getSettingsDoc, SETTINGS_DEFAULTS } from './settings-service.js';
+import { SETTINGS_DEFAULTS } from './settings-service.js';
+import { buildOptimizedImageUrl, buildResponsiveSrcSet } from './cloudinary.js?v=2';
 
 // Static fallback slides used only when no Firestore products are available
 const STATIC_FALLBACK_SLIDES = [
@@ -55,23 +56,17 @@ export async function initSlideshow() {
   const wrapper = document.getElementById('fashion-slideshow');
   if (!wrapper) return;
 
-  // Fetch gallery settings for interval
-  let intervalSeconds = SETTINGS_DEFAULTS.gallery.intervalSeconds;
-  try {
-    const gallerySettings = await getSettingsDoc('gallery');
-    if (gallerySettings?.intervalSeconds && Number.isFinite(gallerySettings.intervalSeconds)) {
-      intervalSeconds = gallerySettings.intervalSeconds;
-    }
-  } catch (_) { /* use default */ }
+  // Use default interval without making extra blocking Firestore queries
+  const intervalSeconds = SETTINGS_DEFAULTS.gallery.intervalSeconds;
 
-  // Fetch published products from Firestore
+  // Fetch published products from shared cached products service
   let slides = [];
   try {
     const products = await getPublishedProducts();
     if (products.length > 0) {
       slides = products
         .filter(p => p.mainImage?.secure_url || p.mainImage?.url)
-        .slice(0, 20) // max 20 slides for performance
+        .slice(0, 16) // max 16 curated looks for gallery
         .map(p => ({
           imageUrl: p.mainImage.secure_url || p.mainImage.url,
           title: p.title,
@@ -102,7 +97,10 @@ function formatCategory(cat) {
 }
 
 /**
- * Build the slideshow DOM inside the wrapper element
+ * Build the slideshow DOM with progressive media loading
+ * Slide 0: Eager optimized load
+ * Slide 1: Next likely slide preloaded
+ * Slide 2+: Lazy data-src hydrated on-demand before transition
  */
 function buildSlideshowDOM(wrapper, slides) {
   const total = slides.length;
@@ -122,6 +120,18 @@ function buildSlideshowDOM(wrapper, slides) {
     const clickable = slide.productId
       ? `data-product-id="${escapeAttr(slide.productId)}" style="cursor:pointer;" role="button" tabindex="0"`
       : '';
+
+    const optimizedUrl = buildOptimizedImageUrl(slide.imageUrl, { width: 750, crop: 'limit' });
+    const srcset = buildResponsiveSrcSet(slide.imageUrl, [380, 600, 850]);
+    const sizes = '(max-width: 600px) 100vw, (max-width: 1024px) 55vw, 650px';
+
+    // Slide 0 and 1 receive src immediately; subsequent slides receive data-src
+    const isUpfront = idx <= 1;
+    const srcAttr = isUpfront ? `src="${escapeAttr(optimizedUrl)}"` : '';
+    const srcsetAttr = (isUpfront && srcset) ? `srcset="${escapeAttr(srcset)}" sizes="${sizes}"` : '';
+    const dataSrcAttr = !isUpfront ? `data-src="${escapeAttr(optimizedUrl)}"` : '';
+    const dataSrcsetAttr = (!isUpfront && srcset) ? `data-srcset="${escapeAttr(srcset)}"` : '';
+
     return `
       <article
         class="slide-item${idx === 0 ? ' is-active' : ''}"
@@ -133,10 +143,16 @@ function buildSlideshowDOM(wrapper, slides) {
       >
         <div class="slide-media">
           <img
-            src="${escapeAttr(slide.imageUrl)}"
+            ${srcAttr}
+            ${srcsetAttr}
+            ${dataSrcAttr}
+            ${dataSrcsetAttr}
             alt="${escapeAttr(slide.title)}"
             class="slide-img"
             loading="${idx === 0 ? 'eager' : 'lazy'}"
+            decoding="async"
+            width="650"
+            height="420"
           >
         </div>
         <div class="slide-content">
@@ -172,7 +188,7 @@ function buildSlideshowDOM(wrapper, slides) {
 }
 
 /**
- * Wire up all slideshow behavior after DOM is built
+ * Wire up slideshow behavior with IntersectionObserver, decode-before-switch, and smooth pausing
  */
 function initSlideshowBehavior(wrapper, slides, intervalSeconds) {
   const total = slides.length;
@@ -181,21 +197,55 @@ function initSlideshowBehavior(wrapper, slides, intervalSeconds) {
   let currentIndex = 0;
   let autoTimer = null;
   let isPaused = false;
+  let isInViewport = false;
+  let isTransitioning = false;
 
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const AUTO_INTERVAL = Math.max(1000, intervalSeconds * 1000);
 
-  const track = wrapper.querySelector('#slides-track-fade');
   const counter = wrapper.querySelector('#slide-counter');
   const prevBtn = wrapper.querySelector('#slide-prev');
   const nextBtn = wrapper.querySelector('#slide-next');
   const dots = wrapper.querySelectorAll('.slideshow-dot');
   const slideItems = wrapper.querySelectorAll('.slide-item');
 
-  function goTo(newIndex) {
+  /**
+   * Preload and decode a slide's image before displaying to prevent blank frames
+   */
+  async function prepareSlide(index) {
+    if (index < 0 || index >= total) return;
+    const slide = slideItems[index];
+    if (!slide) return;
+    const img = slide.querySelector('.slide-img');
+    if (!img) return;
+
+    if (img.dataset.src && !img.src) {
+      img.src = img.dataset.src;
+      if (img.dataset.srcset) {
+        img.srcset = img.dataset.srcset;
+        img.sizes = '(max-width: 600px) 100vw, (max-width: 1024px) 55vw, 650px';
+      }
+    }
+
+    if ('decode' in img && !img.complete) {
+      try {
+        await img.decode();
+      } catch (_) {
+        // Continue even if decode is delayed
+      }
+    }
+  }
+
+  async function goTo(newIndex) {
+    if (isTransitioning) return;
+    isTransitioning = true;
+
     // Wrap around
     if (newIndex < 0) newIndex = total - 1;
     if (newIndex >= total) newIndex = 0;
+
+    // Ensure target slide media is prepared and decoded before switching
+    await prepareSlide(newIndex);
 
     // Hide current
     const oldSlide = slideItems[currentIndex];
@@ -223,18 +273,50 @@ function initSlideshowBehavior(wrapper, slides, intervalSeconds) {
       dots[currentIndex].setAttribute('tabindex', '0');
     }
     if (counter) counter.textContent = `${currentIndex + 1} of ${total}`;
+
+    isTransitioning = false;
+
+    // Preload next upcoming slide in the background
+    const nextIdx = (currentIndex + 1) % total;
+    prepareSlide(nextIdx);
   }
 
   function startAuto() {
-    if (prefersReducedMotion || autoTimer !== null || isPaused || total <= 1) return;
-    autoTimer = setInterval(() => goTo(currentIndex + 1), AUTO_INTERVAL);
+    if (prefersReducedMotion || autoTimer !== null || isPaused || !isInViewport || total <= 1) return;
+    autoTimer = setInterval(() => {
+      goTo(currentIndex + 1);
+    }, AUTO_INTERVAL);
   }
 
   function stopAuto() {
-    if (autoTimer !== null) { clearInterval(autoTimer); autoTimer = null; }
+    if (autoTimer !== null) {
+      clearInterval(autoTimer);
+      autoTimer = null;
+    }
   }
 
-  function restartAuto() { stopAuto(); startAuto(); }
+  function restartAuto() {
+    stopAuto();
+    startAuto();
+  }
+
+  // IntersectionObserver: Pause slideshow when offscreen to save battery and network
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        isInViewport = entry.isIntersecting && entry.intersectionRatio > 0.1;
+        if (isInViewport) {
+          startAuto();
+        } else {
+          stopAuto();
+        }
+      });
+    }, { threshold: [0, 0.15] });
+    observer.observe(wrapper);
+  } else {
+    isInViewport = true;
+    startAuto();
+  }
 
   // Hover/focus pausing
   wrapper.addEventListener('mouseenter', () => { isPaused = true; stopAuto(); });
@@ -242,10 +324,13 @@ function initSlideshowBehavior(wrapper, slides, intervalSeconds) {
   wrapper.addEventListener('focusin', () => { isPaused = true; stopAuto(); });
   wrapper.addEventListener('focusout', () => { isPaused = false; startAuto(); });
 
-  // Page visibility
+  // Page visibility (pause when tab is backgrounded)
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) stopAuto();
-    else if (!isPaused) startAuto();
+    if (document.hidden) {
+      stopAuto();
+    } else if (!isPaused && isInViewport) {
+      startAuto();
+    }
   });
 
   // Prev/Next buttons
@@ -294,7 +379,6 @@ function initSlideshowBehavior(wrapper, slides, intervalSeconds) {
 
   // Init
   goTo(0);
-  startAuto();
 }
 
 function escapeHtml(str) {

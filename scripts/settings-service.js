@@ -25,6 +25,20 @@ async function getFirestoreContext() {
   return { db, firestore: firestoreModule };
 }
 
+// In-memory caching & deduplication for siteSettings
+let cachedPublicSettings = null;
+let settingsCacheTimestamp = 0;
+const SETTINGS_TTL_MS = 120 * 1000; // 2 minutes
+let inFlightSettingsPromise = null;
+
+/**
+ * Invalidate settings memory cache (called after admin saves)
+ */
+export function invalidateSettingsCache() {
+  cachedPublicSettings = null;
+  settingsCacheTimestamp = 0;
+}
+
 /**
  * Fetch a single settings document by ID.
  * Returns null if document doesn't exist.
@@ -32,6 +46,11 @@ async function getFirestoreContext() {
  * @returns {Promise<Object|null>}
  */
 export async function getSettingsDoc(docId) {
+  // If all public settings are already cached, return from cache
+  if (cachedPublicSettings && cachedPublicSettings[docId]) {
+    return cachedPublicSettings[docId];
+  }
+
   try {
     const { db, firestore } = await getFirestoreContext();
     const { doc, getDoc } = firestore;
@@ -40,7 +59,7 @@ export async function getSettingsDoc(docId) {
     if (!snap.exists()) return null;
     return { id: snap.id, ...snap.data() };
   } catch (err) {
-    console.warn('[Settings Service] Could not fetch', docId, err.message);
+    // If not found or permissions error, gracefully return null
     return null;
   }
 }
@@ -61,26 +80,47 @@ export async function saveSettingsDoc(docId, data) {
     isPublic: true,
     updatedAt: serverTimestamp()
   }, { merge: true });
+
+  invalidateSettingsCache();
 }
 
 /**
- * Fetch all publicly readable siteSettings documents.
+ * Fetch all publicly readable siteSettings documents with memory caching and deduplication.
+ * @param {boolean} [forceRefresh=false]
  * @returns {Promise<Object>} keyed by document ID
  */
-export async function getAllPublicSettings() {
-  try {
-    const { db, firestore } = await getFirestoreContext();
-    const { collection, getDocs, query, where } = firestore;
-    const colRef = collection(db, 'siteSettings');
-    const q = query(colRef, where('isPublic', '==', true));
-    const snap = await getDocs(q);
-    const result = {};
-    snap.forEach(d => { result[d.id] = { id: d.id, ...d.data() }; });
-    return result;
-  } catch (err) {
-    console.warn('[Settings Service] Could not load site settings.', err.message);
-    return {};
+export async function getAllPublicSettings(forceRefresh = false) {
+  const now = Date.now();
+  if (!forceRefresh && cachedPublicSettings && (now - settingsCacheTimestamp < SETTINGS_TTL_MS)) {
+    return cachedPublicSettings;
   }
+
+  if (inFlightSettingsPromise) {
+    return inFlightSettingsPromise;
+  }
+
+  inFlightSettingsPromise = (async () => {
+    try {
+      const { db, firestore } = await getFirestoreContext();
+      const { collection, getDocs, query, where } = firestore;
+      const colRef = collection(db, 'siteSettings');
+      const q = query(colRef, where('isPublic', '==', true));
+      const snap = await getDocs(q);
+      const result = {};
+      snap.forEach(d => { result[d.id] = { id: d.id, ...d.data() }; });
+      cachedPublicSettings = result;
+      settingsCacheTimestamp = Date.now();
+      return result;
+    } catch (err) {
+      console.warn('[Settings Service] Could not load site settings.', err.message);
+      if (cachedPublicSettings) return cachedPublicSettings;
+      return {};
+    } finally {
+      inFlightSettingsPromise = null;
+    }
+  })();
+
+  return inFlightSettingsPromise;
 }
 
 /**

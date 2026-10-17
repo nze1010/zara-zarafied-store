@@ -28,62 +28,139 @@ async function getFirestoreContext() {
   return { db, firestore: firestoreModule };
 }
 
+// In-memory cache & deduplication state
+let cachedPublishedProducts = null;
+let cacheTimestamp = 0;
+const CACHE_TTL_MS = 60 * 1000; // 60 seconds TTL
+let inFlightProductsPromise = null;
+const STORAGE_CACHE_KEY = 'zarafied_products_cache';
+const STORAGE_TIME_KEY = 'zarafied_products_cache_time';
+
 /**
- * Fetch published products for the public store
- * Strictly queries where status == 'published' to comply with firestore.rules
- * @param {string|null} [categoryFilter] - Optional category filter (e.g. 'ready-to-wear')
- * @returns {Promise<Array<Object>>}
+ * Invalidate in-memory and session cache (called after admin modifications)
  */
-export async function getPublishedProducts(categoryFilter = null) {
+export function invalidateProductsCache() {
+  cachedPublishedProducts = null;
+  cacheTimestamp = 0;
   try {
-    const { db, firestore } = await getFirestoreContext();
-    const { collection, getDocs, query, where, orderBy } = firestore;
-
-    const productsRef = collection(db, COLLECTION_NAME);
-    let q;
-
-    if (categoryFilter && categoryFilter !== 'all') {
-      q = query(
-        productsRef,
-        where('status', '==', 'published'),
-        where('category', '==', categoryFilter)
-      );
-    } else {
-      q = query(
-        productsRef,
-        where('status', '==', 'published')
-      );
-    }
-
-    const snapshot = await getDocs(q);
-    const products = [];
-
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      products.push({
-        id: doc.id,
-        ...data,
-        createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : (data.createdAt || new Date()),
-        updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : (data.updatedAt || new Date())
-      });
-    });
-
-    // Client-side sort by date descending to avoid requiring composite Firestore indexes
-    products.sort((a, b) => b.createdAt - a.createdAt);
-
-    return products;
-  } catch (error) {
-    console.warn('[ZARAFIED Products Service]: Unable to load live products.', error.message);
-    throw error;
-  }
+    sessionStorage.removeItem(STORAGE_CACHE_KEY);
+    sessionStorage.removeItem(STORAGE_TIME_KEY);
+  } catch (_) {}
 }
 
 /**
- * Fetch a single product by ID
+ * Fetch all published products with deduplication, in-memory caching, and instant client filtering.
+ * Resolves concurrent calls from slideshow and shop into a single Firestore query.
+ *
+ * @param {string|null} [categoryFilter=null] - Optional category filter (e.g. 'ready-to-wear')
+ * @param {Object} [options]
+ * @param {boolean} [options.forceRefresh=false] - Bypass cache and re-fetch from Firestore
+ * @returns {Promise<Array<Object>>}
+ */
+export async function getPublishedProducts(categoryFilter = null, options = {}) {
+  const { forceRefresh = false } = options;
+  const now = Date.now();
+
+  // 1. Try to restore from sessionStorage if memory cache is clean
+  if (!cachedPublishedProducts && !forceRefresh) {
+    try {
+      const stored = sessionStorage.getItem(STORAGE_CACHE_KEY);
+      const storedTime = parseInt(sessionStorage.getItem(STORAGE_TIME_KEY), 10);
+      if (stored && storedTime && (now - storedTime < CACHE_TTL_MS)) {
+        const parsed = JSON.parse(stored);
+        cachedPublishedProducts = parsed.map(p => ({
+          ...p,
+          createdAt: p.createdAt ? new Date(p.createdAt) : new Date(),
+          updatedAt: p.updatedAt ? new Date(p.updatedAt) : new Date()
+        }));
+        cacheTimestamp = storedTime;
+      }
+    } catch (_) {}
+  }
+
+  // 2. Return fresh cached data if within TTL
+  if (!forceRefresh && cachedPublishedProducts && (now - cacheTimestamp < CACHE_TTL_MS)) {
+    return filterProductsByCategory(cachedPublishedProducts, categoryFilter);
+  }
+
+  // 3. Deduplicate concurrent in-flight requests
+  if (inFlightProductsPromise) {
+    const products = await inFlightProductsPromise;
+    return filterProductsByCategory(products, categoryFilter);
+  }
+
+  // 4. Execute single Firestore query for published products
+  inFlightProductsPromise = (async () => {
+    try {
+      const { db, firestore } = await getFirestoreContext();
+      const { collection, getDocs, query, where } = firestore;
+
+      const productsRef = collection(db, COLLECTION_NAME);
+      const q = query(productsRef, where('status', '==', 'published'));
+      const snapshot = await getDocs(q);
+      const products = [];
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        products.push({
+          id: doc.id,
+          ...data,
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : (data.createdAt || new Date()),
+          updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : (data.updatedAt || new Date())
+        });
+      });
+
+      // Sort client-side by date descending
+      products.sort((a, b) => b.createdAt - a.createdAt);
+
+      // Save to memory cache
+      cachedPublishedProducts = products;
+      cacheTimestamp = Date.now();
+
+      // Save to sessionStorage for fast subsequent navigations
+      try {
+        sessionStorage.setItem(STORAGE_CACHE_KEY, JSON.stringify(products));
+        sessionStorage.setItem(STORAGE_TIME_KEY, cacheTimestamp.toString());
+      } catch (_) {}
+
+      return products;
+    } catch (error) {
+      console.warn('[ZARAFIED Products Service]: Unable to load live products.', error.message);
+      // Return stale cache if available upon network failure
+      if (cachedPublishedProducts) {
+        return cachedPublishedProducts;
+      }
+      throw error;
+    } finally {
+      inFlightProductsPromise = null;
+    }
+  })();
+
+  const products = await inFlightProductsPromise;
+  return filterProductsByCategory(products, categoryFilter);
+}
+
+/**
+ * Filter an array of products by category in memory (instant 0ms operation)
+ */
+function filterProductsByCategory(products, categoryFilter) {
+  if (!categoryFilter || categoryFilter === 'all') {
+    return products;
+  }
+  return products.filter((p) => p.category === categoryFilter);
+}
+
+/**
+ * Fetch a single product by ID (checks memory cache first for 0ms lookup)
  * @param {string} productId 
  * @returns {Promise<Object|null>}
  */
 export async function getProductById(productId) {
+  if (cachedPublishedProducts) {
+    const found = cachedPublishedProducts.find((p) => p.id === productId);
+    if (found) return found;
+  }
+
   const { db, firestore } = await getFirestoreContext();
   const { doc, getDoc } = firestore;
 
@@ -166,6 +243,7 @@ export async function createProduct(productData) {
 
   const colRef = collection(db, COLLECTION_NAME);
   const docRef = await addDoc(colRef, docData);
+  invalidateProductsCache();
   return docRef.id;
 }
 
@@ -192,6 +270,7 @@ export async function updateProduct(productId, updates) {
   }
 
   await updateDoc(docRef, cleanedUpdates);
+  invalidateProductsCache();
 }
 
 /**
@@ -217,6 +296,7 @@ export async function deleteProduct(productId) {
 
   const docRef = doc(db, COLLECTION_NAME, productId);
   await deleteDoc(docRef);
+  invalidateProductsCache();
 }
 
 /**

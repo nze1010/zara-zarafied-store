@@ -20,6 +20,7 @@ import { initFirebase } from './firebase-config.js';
 import { initShop } from './shop.js';
 import { getAllPublicSettings, SETTINGS_DEFAULTS } from './settings-service.js';
 import { initPWAInstall } from './pwa-install.js';
+import { buildOptimizedImageUrl } from './cloudinary.js?v=2';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // 1. Navigation (synchronous — no deps)
@@ -61,16 +62,84 @@ document.addEventListener('DOMContentLoaded', async () => {
     revealElements.forEach(el => observer.observe(el));
   }
 
-  // 8. Service worker
+  // 8. Service worker registration & update lifecycle
   if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
-    navigator.serviceWorker
-      .register('./sw.js')
-      .catch(() => { /* silent in dev */ });
+    initServiceWorkerUpdate();
   }
 
   // 9. PWA Installation Experience
   initPWAInstall();
 });
+
+/**
+ * Handle Service Worker lifecycle, update notifications, and clean reload
+ */
+function initServiceWorkerUpdate() {
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  });
+
+  navigator.serviceWorker
+    .register('./sw.js')
+    .then((reg) => {
+      // Periodically check for updates when returning to the tab
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          reg.update().catch(() => {});
+        }
+      });
+
+      // If a new worker is already waiting to activate
+      if (reg.waiting) {
+        showAppUpdateBanner(reg.waiting);
+        return;
+      }
+
+      // Listen for newly installed workers
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            showAppUpdateBanner(newWorker);
+          }
+        });
+      });
+    })
+    .catch(() => { /* silent in dev */ });
+}
+
+/**
+ * Show a small unobtrusive banner when a new release is ready
+ */
+function showAppUpdateBanner(waitingWorker) {
+  if (document.getElementById('app-update-banner')) return;
+
+  const banner = document.createElement('div');
+  banner.id = 'app-update-banner';
+  banner.className = 'app-update-banner';
+  banner.setAttribute('role', 'status');
+  banner.setAttribute('aria-live', 'polite');
+  banner.innerHTML = `
+    <div class="update-banner-content">
+      <span>✨ A new version of ZARAFIED is ready.</span>
+      <button type="button" class="btn btn-primary btn-xs" id="btn-apply-update">Update</button>
+      <button type="button" class="update-banner-close" id="btn-close-update" aria-label="Dismiss">&times;</button>
+    </div>
+  `;
+  document.body.appendChild(banner);
+
+  document.getElementById('btn-apply-update')?.addEventListener('click', () => {
+    waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+  });
+
+  document.getElementById('btn-close-update')?.addEventListener('click', () => {
+    banner.remove();
+  });
+}
 
 /**
  * Fetch siteSettings from Firestore and update DOM elements with managed values.
@@ -84,9 +153,9 @@ async function hydrateFromSettings() {
     const brandSettings = settings.brand || SETTINGS_DEFAULTS.brand;
     if (brandSettings?.logoUrl) {
       const headerLogo = document.getElementById('header-brand-logo');
-      if (headerLogo) headerLogo.src = brandSettings.logoUrl;
+      if (headerLogo) headerLogo.src = buildOptimizedImageUrl(brandSettings.logoUrl, { width: 120, crop: 'limit' });
       const footerLogo = document.getElementById('footer-brand-logo');
-      if (footerLogo) footerLogo.src = brandSettings.logoUrl;
+      if (footerLogo) footerLogo.src = buildOptimizedImageUrl(brandSettings.logoUrl, { width: 120, crop: 'limit' });
     }
     if (brandSettings?.faviconUrl) {
       const favicon = document.querySelector("link[rel*='icon']");
@@ -97,7 +166,7 @@ async function hydrateFromSettings() {
     const heroSettings = settings.hero || SETTINGS_DEFAULTS.hero;
     const heroImg = document.getElementById('hero-portrait-img');
     if (heroImg && heroSettings.imageUrl) {
-      heroImg.src = heroSettings.imageUrl;
+      heroImg.src = buildOptimizedImageUrl(heroSettings.imageUrl, { width: 900, crop: 'limit' });
       if (heroSettings.imageAlt) heroImg.alt = heroSettings.imageAlt;
     }
     const heroTitle = document.getElementById('hero-title');
@@ -113,7 +182,7 @@ async function hydrateFromSettings() {
     const aboutSettings = settings.about || SETTINGS_DEFAULTS.about;
     const aboutImg = document.getElementById('about-collage-img');
     if (aboutImg && aboutSettings.imageUrl) {
-      aboutImg.src = aboutSettings.imageUrl;
+      aboutImg.src = buildOptimizedImageUrl(aboutSettings.imageUrl, { width: 800, crop: 'limit' });
       if (aboutSettings.imageAlt) aboutImg.alt = aboutSettings.imageAlt;
     }
     const storyTitle = document.getElementById('story-title');
@@ -134,11 +203,11 @@ async function hydrateFromSettings() {
     const welcomeImg = document.getElementById('welcome-avatar-img');
     const panelImg = document.getElementById('welcome-panel-avatar-img');
     if (welcomeImg && wcSettings.imageUrl) {
-      welcomeImg.src = wcSettings.imageUrl;
+      welcomeImg.src = buildOptimizedImageUrl(wcSettings.imageUrl, { width: 120, crop: 'limit' });
       if (wcSettings.imageAlt) welcomeImg.alt = wcSettings.imageAlt;
     }
     if (panelImg && wcSettings.imageUrl) {
-      panelImg.src = wcSettings.imageUrl;
+      panelImg.src = buildOptimizedImageUrl(wcSettings.imageUrl, { width: 120, crop: 'limit' });
       if (wcSettings.imageAlt) panelImg.alt = wcSettings.imageAlt;
     }
     const wcTitle = document.querySelector('.welcome-greeting-title');

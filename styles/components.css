@@ -1135,3 +1135,47 @@ body.menu-open .pwa-install-banner {
   }
 }
 
+/* ==========================================================================
+   APP UPDATE NOTIFICATION TOAST
+   ========================================================================== */
+.app-update-banner {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-deep-plum, #442438);
+  color: #FFFFFF;
+  border: 1px solid var(--color-gold, #D5AD67);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  border-radius: var(--radius-full, 9999px);
+  padding: 8px 16px;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  font-family: var(--font-sans);
+  animation: slideDownIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.update-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.update-banner-close {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 1.25rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+  transition: color var(--transition-fast);
+}
+
+.update-banner-close:hover {
+  color: #FFFFFF;
+}
+
+

@@ -22,9 +22,11 @@
   <link rel="apple-touch-icon" href="./ZARA_ASSETS/brand/zara-logo.png">
   <link rel="manifest" href="./manifest.webmanifest">
 
-  <!-- Google Fonts Preconnect & Styles -->
+  <!-- Google Fonts & CDN Preconnect -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
+  <link rel="preload" as="image" href="./ZARA_ASSETS/owner/owner-portrait-pink-outfit.jpg" fetchpriority="high">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Core Stylesheets -->
@@ -33,6 +35,30 @@
   <link rel="stylesheet" href="./styles/layout.css">
   <link rel="stylesheet" href="./styles/components.css">
   <link rel="stylesheet" href="./styles/animations.css">
+
+  <!-- Service Worker Cache Migration Helper (Purges stale pre-v13 caches) -->
+  <script>
+    if ('caches' in window && !sessionStorage.getItem('zara_sw_purged_v13')) {
+      caches.keys().then(function(keys) {
+        var obsolete = keys.filter(function(k) {
+          return k.startsWith('zarafied-') && !k.includes('v13') && !k.includes('images-v1');
+        });
+        if (obsolete.length > 0) {
+          sessionStorage.setItem('zara_sw_purged_v13', '1');
+          Promise.all(obsolete.map(function(k) { return caches.delete(k); })).then(function() {
+            if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+              navigator.serviceWorker.getRegistrations().then(function(regs) {
+                regs.forEach(function(r) { r.update(); });
+                window.location.reload();
+              });
+            } else {
+              window.location.reload();
+            }
+          });
+        }
+      });
+    }
+  </script>
 </head>
 <body>
 
@@ -52,6 +78,7 @@
           width="44" 
           height="44"
           loading="eager"
+          decoding="async"
         >
         <div class="brand-text-group">
           <span class="brand-title">ZARA</span>
@@ -187,6 +214,8 @@
               width="600" 
               height="750"
               loading="eager"
+              fetchpriority="high"
+              decoding="async"
             >
             <div class="hero-portrait-badge">
               <div class="badge-owner-info">
@@ -306,6 +335,7 @@
               width="960" 
               height="1280"
               loading="lazy"
+              decoding="async"
             >
           </div>
         </div>
@@ -429,6 +459,8 @@
               alt="ZARA Logo" 
               width="36" 
               height="36" 
+              loading="lazy"
+              decoding="async"
               style="border-radius: var(--radius-sm); background: #FFFFFF; padding: 2px;"
             >
             <span class="footer-brand-title">ZARA &mdash; ZARAFIED</span>
@@ -519,6 +551,7 @@
           width="40" 
           height="40"
           loading="lazy"
+          decoding="async"
         >
         <span class="widget-online-indicator" aria-hidden="true"></span>
       </span>
@@ -548,6 +581,7 @@
             width="36" 
             height="36"
             loading="lazy"
+            decoding="async"
           >
           <span class="widget-online-indicator" aria-hidden="true"></span>
         </div>

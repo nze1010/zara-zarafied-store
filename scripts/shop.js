@@ -12,6 +12,7 @@
  */
 
 import { getPublishedProducts, formatCurrency } from './products-service.js';
+import { buildOptimizedImageUrl, buildResponsiveSrcSet } from './cloudinary.js?v=2';
 
 let activeCategory = 'all';
 let currentProducts = [];
@@ -104,19 +105,23 @@ function setupFilterListeners() {
       pill.setAttribute('aria-selected', 'true');
 
       activeCategory = pill.dataset.category || 'all';
-      await loadAndRenderProducts();
+      // Fast in-memory render without flashing skeletons
+      await loadAndRenderProducts(false);
     });
   });
 }
 
 /**
  * Fetch and render products based on active category
+ * @param {boolean} [showSkeletons=true] - Only show skeletons on initial load
  */
-async function loadAndRenderProducts() {
+async function loadAndRenderProducts(showSkeletons = true) {
   const grid = document.getElementById('shop-products-grid');
   if (!grid) return;
 
-  grid.innerHTML = renderSkeletons(3);
+  if (showSkeletons && (!currentProducts || currentProducts.length === 0)) {
+    grid.innerHTML = renderSkeletons(3);
+  }
 
   try {
     const products = await getPublishedProducts(activeCategory);
@@ -159,17 +164,17 @@ async function loadAndRenderProducts() {
         <button type="button" class="btn btn-outline btn-sm btn-retry" id="btn-retry-shop">Try Again</button>
       </div>
     `;
-    document.getElementById('btn-retry-shop')?.addEventListener('click', loadAndRenderProducts);
+    document.getElementById('btn-retry-shop')?.addEventListener('click', () => loadAndRenderProducts(true));
   }
 }
 
 /**
- * Render single product card HTML
+ * Render single product card HTML with optimized Cloudinary responsive image
  * @param {Object} product 
  * @returns {string}
  */
 function renderProductCard(product) {
-  const imageUrl = product.mainImage?.secure_url || product.mainImage?.url || './ZARA_ASSETS/fashion/signature-fashion-01-ankara.png';
+  const rawImageUrl = product.mainImage?.secure_url || product.mainImage?.url || './ZARA_ASSETS/fashion/signature-fashion-01-ankara.png';
   const altText = product.mainImage?.alt || product.title;
   const formattedPrice = formatCurrency(product.price);
 
@@ -189,14 +194,23 @@ function renderProductCard(product) {
   };
   const categoryLabel = categoryLabels[product.category] || product.category;
 
+  // Cloudinary Responsive Delivery Optimization (480px display target, auto WebP/AVIF format and auto quality)
+  const optimizedUrl = buildOptimizedImageUrl(rawImageUrl, { width: 480, crop: 'limit' });
+  const srcset = buildResponsiveSrcSet(rawImageUrl, [320, 480, 640]);
+  const srcsetAttribute = srcset ? `srcset="${srcset}" sizes="(max-width: 600px) 92vw, (max-width: 1024px) 45vw, 320px"` : '';
+
   return `
     <article class="product-card" data-id="${product.id}">
       <div class="card-image-wrapper" title="Click to view details for ${escapeHtml(product.title)}" tabindex="0" role="button" aria-label="View ${escapeHtml(product.title)}">
         <img 
-          src="${imageUrl}" 
+          src="${optimizedUrl}" 
+          ${srcsetAttribute}
           alt="${escapeHtml(altText)}" 
           class="product-card-img" 
           loading="lazy"
+          decoding="async"
+          width="400"
+          height="500"
         >
         <span class="badge product-badge ${availabilityClass}">${availabilityBadge}</span>
       </div>
@@ -226,8 +240,9 @@ function openModal(productId) {
 
   const formattedPrice = formatCurrency(product.price);
   const images = [product.mainImage, ...(product.additionalImages || [])].filter(Boolean);
-  const primaryImg = images[0]?.secure_url || images[0]?.url || './ZARA_ASSETS/fashion/signature-fashion-01-ankara.png';
-  let activeImageUrl = primaryImg;
+  const rawPrimaryImg = images[0]?.secure_url || images[0]?.url || './ZARA_ASSETS/fashion/signature-fashion-01-ankara.png';
+  let activeImageUrl = rawPrimaryImg;
+  const modalPrimaryOptimized = buildOptimizedImageUrl(rawPrimaryImg, { width: 800, crop: 'limit' });
 
   const availabilityLabels = {
     in_stock: 'In Stock',
@@ -280,15 +295,27 @@ function openModal(productId) {
     <div class="modal-grid">
       <div class="modal-gallery">
         <div class="modal-main-image-frame">
-          <img src="${primaryImg}" alt="${escapeHtml(product.title)}" class="modal-main-img" id="modal-active-img">
+          <img 
+            src="${modalPrimaryOptimized}" 
+            alt="${escapeHtml(product.title)}" 
+            class="modal-main-img" 
+            id="modal-active-img"
+            decoding="async"
+            width="600"
+            height="750"
+          >
         </div>
         ${images.length > 1 ? `
           <div class="modal-thumbnails-row">
-            ${images.map((img, idx) => `
-              <button type="button" class="modal-thumb-btn ${idx === 0 ? 'active' : ''}" data-src="${img.secure_url || img.url}" aria-label="View image ${idx + 1}">
-                <img src="${img.secure_url || img.url}" alt="Thumbnail ${idx + 1}" class="modal-thumb-img">
-              </button>
-            `).join('')}
+            ${images.map((img, idx) => {
+              const rawThumb = img.secure_url || img.url;
+              const thumbOptimized = buildOptimizedImageUrl(rawThumb, { width: 140, crop: 'limit' });
+              return `
+                <button type="button" class="modal-thumb-btn ${idx === 0 ? 'active' : ''}" data-src="${escapeAttr(rawThumb)}" aria-label="View image ${idx + 1}">
+                  <img src="${thumbOptimized}" alt="Thumbnail ${idx + 1}" class="modal-thumb-img" loading="lazy" decoding="async" width="70" height="70">
+                </button>
+              `;
+            }).join('')}
           </div>
         ` : ''}
       </div>
@@ -321,9 +348,12 @@ function openModal(productId) {
     btn.addEventListener('click', () => {
       modalBody.querySelectorAll('.modal-thumb-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+      const rawSrc = btn.dataset.src;
+      activeImageUrl = rawSrc;
       const activeImg = document.getElementById('modal-active-img');
-      if (activeImg) activeImg.src = btn.dataset.src;
-      activeImageUrl = btn.dataset.src;
+      if (activeImg) {
+        activeImg.src = buildOptimizedImageUrl(rawSrc, { width: 800, crop: 'limit' });
+      }
     });
   });
 
