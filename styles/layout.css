@@ -136,6 +136,38 @@
   gap: var(--space-md);
 }
 
+/* Hide header WhatsApp button on tablet & mobile to prevent overlapping logo & hamburger */
+@media (max-width: 991px) {
+  .header-whatsapp-btn,
+  .header-actions .btn-whatsapp {
+    display: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-inner {
+    height: 64px;
+    padding-left: var(--space-sm);
+    padding-right: var(--space-sm);
+  }
+  .brand-link {
+    gap: 0.5rem;
+    max-width: calc(100% - 56px);
+  }
+  .brand-logo-img {
+    width: 36px;
+    height: 36px;
+  }
+  .brand-title {
+    font-size: 1.22rem;
+    letter-spacing: 0.08em;
+  }
+  .brand-subtitle {
+    font-size: 0.55rem;
+    letter-spacing: 0.16em;
+  }
+}
+
 /* Mobile Menu Button */
 .menu-toggle {
   display: flex;

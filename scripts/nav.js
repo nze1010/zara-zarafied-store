@@ -30,6 +30,7 @@ export function initNavigation() {
     navDrawer.classList.add('is-open');
     if (navBackdrop) navBackdrop.classList.add('is-open');
     menuToggle.setAttribute('aria-expanded', 'true');
+    document.body.classList.add('menu-open');
     document.body.style.overflow = 'hidden';
     if (closeBtn) closeBtn.focus();
   };
@@ -39,6 +40,7 @@ export function initNavigation() {
     navDrawer.classList.remove('is-open');
     if (navBackdrop) navBackdrop.classList.remove('is-open');
     menuToggle.setAttribute('aria-expanded', 'false');
+    document.body.classList.remove('menu-open');
     document.body.style.overflow = '';
     menuToggle.focus();
   };

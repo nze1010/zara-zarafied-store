@@ -149,145 +149,459 @@
    - Positioned in bottom-right viewport corner
    - Graceful appearance and dismissal
    ========================================================================== */
-.welcome-card-wrapper {
+/* ==========================================================================
+   FLOATING DRAGGABLE WHATSAPP CONTACT WIDGET
+   - Compact circular trigger button / pill by default (never covers page content)
+   - Smoothly draggable via touch or mouse; stays within viewport
+   - Expands on tap to show friendly greeting & WhatsApp link
+   ========================================================================== */
+.floating-contact-widget {
   position: fixed;
-  bottom: var(--space-lg);
-  right: var(--space-lg);
+  bottom: 24px;
+  right: 20px;
   z-index: var(--z-welcome-card);
-  max-width: min(380px, calc(100vw - 2rem));
-  pointer-events: none; /* Allows clicks outside card to pass through */
+  user-select: none;
+  touch-action: none;
 }
 
-.welcome-card {
-  background: #FFFFFF;
-  border-radius: var(--radius-lg);
-  padding: var(--space-md);
-  box-shadow: 0 12px 36px rgba(47, 23, 38, 0.18), 0 0 0 1px rgba(213, 173, 103, 0.35);
-  border: 1px solid var(--color-border);
+body.menu-open .floating-contact-widget,
+body.menu-open .pwa-install-banner {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  transition: opacity var(--transition-fast), visibility var(--transition-fast);
+}
+
+/* Collapsed Floating Action Button (FAB) */
+.widget-trigger-fab {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
-  pointer-events: auto; /* Card itself is interactive */
+  gap: 8px;
+  padding: 6px 14px 6px 6px;
+  background: #FFFFFF;
+  border: 1.5px solid rgba(213, 173, 103, 0.45);
+  border-radius: var(--radius-full);
+  box-shadow: 0 8px 24px rgba(47, 23, 38, 0.18), 0 2px 6px rgba(0, 0, 0, 0.08);
+  cursor: grab;
+  color: var(--color-deep-plum);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 700;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+  outline: none;
+}
+
+.widget-trigger-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(47, 23, 38, 0.24);
+  border-color: var(--color-gold);
+}
+
+.widget-trigger-fab:active {
+  cursor: grabbing;
+}
+
+.widget-trigger-fab:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
+}
+
+.widget-fab-avatar {
   position: relative;
-  opacity: 0;
-  transform: translateY(20px) scale(0.96);
-  transition: opacity var(--transition-slow), transform var(--transition-slow);
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-full);
+  overflow: visible;
+  flex-shrink: 0;
 }
 
-.welcome-card.is-visible {
-  opacity: 1;
-  transform: translateY(0) scale(1);
+.widget-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  object-position: top center;
+  border: 1.5px solid var(--color-gold);
+  background: var(--color-deep-plum);
+  display: block;
 }
 
-.welcome-card.is-dismissing {
+.widget-online-indicator {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 11px;
+  height: 11px;
+  border-radius: var(--radius-full);
+  background: #25D366;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 0 4px rgba(37, 211, 102, 0.6);
+}
+
+.widget-fab-wa-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  color: #25D366;
+}
+
+.widget-wa-svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+.widget-fab-text {
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* Expanded Contact Panel */
+.contact-widget-panel {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  right: 0;
+  width: min(310px, calc(100vw - 32px));
+  background: #FFFFFF;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(213, 173, 103, 0.35);
+  box-shadow: 0 16px 40px rgba(47, 23, 38, 0.22), 0 0 0 1px rgba(68, 36, 56, 0.06);
+  padding: 16px;
   opacity: 0;
-  transform: translateY(15px) scale(0.95);
+  visibility: hidden;
+  transform: translateY(10px) scale(0.96);
+  transform-origin: bottom right;
+  transition: opacity var(--transition-normal), transform var(--transition-normal), visibility var(--transition-normal);
   pointer-events: none;
 }
 
-.welcome-avatar-frame {
-  width: 60px;
-  height: 60px;
-  border-radius: var(--radius-full);
-  overflow: hidden;
-  flex-shrink: 0;
-  border: 2px solid var(--color-gold);
-  background: var(--color-deep-plum);
-  box-shadow: 0 2px 8px rgba(68, 36, 56, 0.15);
+.contact-widget-panel.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
 }
 
-.welcome-avatar-img {
+.floating-contact-widget.open-down .contact-widget-panel {
+  bottom: auto;
+  top: calc(100% + 12px);
+  transform-origin: top right;
+}
+
+.floating-contact-widget.align-left .contact-widget-panel {
+  right: auto;
+  left: 0;
+  transform-origin: bottom left;
+}
+
+.floating-contact-widget.open-down.align-left .contact-widget-panel {
+  transform-origin: top left;
+}
+
+.widget-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.widget-panel-avatar-wrap {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.widget-panel-avatar-img {
   width: 100%;
   height: 100%;
+  border-radius: var(--radius-full);
   object-fit: cover;
   object-position: top center;
+  border: 1.5px solid var(--color-gold);
 }
 
-.welcome-text-content {
+.widget-panel-meta {
   flex: 1;
   min-width: 0;
 }
 
-.welcome-greeting-title {
+.widget-panel-title {
   font-family: var(--font-serif);
-  font-size: 1.05rem;
+  font-size: 0.96rem;
   font-weight: 700;
   color: var(--color-deep-plum);
   line-height: 1.2;
-  margin-bottom: 2px;
 }
 
-.welcome-greeting-copy {
-  font-size: var(--font-size-xs);
+.widget-panel-status {
+  font-size: 0.72rem;
   color: var(--color-muted-text);
-  line-height: 1.45;
-  margin-bottom: var(--space-xs);
+  margin-top: 1px;
 }
 
-.welcome-actions-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-}
-
-.welcome-action-link {
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  color: var(--color-berry);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.welcome-action-link:hover {
-  color: var(--color-coral);
-}
-
-.welcome-close-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
+.widget-panel-close-btn {
   width: 28px;
   height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   border-radius: var(--radius-full);
   background: rgba(68, 36, 56, 0.06);
   color: var(--color-muted-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1.1rem;
   line-height: 1;
+  border: none;
+  cursor: pointer;
   transition: all var(--transition-fast);
 }
 
-.welcome-close-btn:hover,
-.welcome-close-btn:focus-visible {
+.widget-panel-close-btn:hover,
+.widget-panel-close-btn:focus-visible {
   background: var(--color-deep-plum);
   color: #FFFFFF;
 }
 
+.widget-panel-copy {
+  font-size: 0.8rem;
+  color: var(--color-dark-text);
+  line-height: 1.45;
+  margin-bottom: 14px;
+}
+
+.widget-panel-wa-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+}
+
+/* Mobile Adjustments for Floating Widget */
 @media (max-width: 600px) {
-  .welcome-card-wrapper {
-    bottom: var(--space-sm);
-    right: var(--space-sm);
-    left: var(--space-sm);
-    max-width: calc(100vw - 1.5rem);
-    margin: 0 auto;
+  .floating-contact-widget {
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    right: 14px;
   }
-  .welcome-card {
-    padding: 0.65rem 0.85rem;
-    gap: 0.65rem;
+  .widget-trigger-fab {
+    padding: 0;
+    border-radius: var(--radius-full);
+    width: 50px;
+    height: 50px;
+    justify-content: center;
+    position: relative;
+    gap: 0;
+    box-shadow: 0 8px 24px rgba(47, 23, 38, 0.22), 0 2px 6px rgba(0, 0, 0, 0.1);
   }
-  .welcome-avatar-frame {
-    width: 46px;
-    height: 46px;
+  .widget-fab-avatar {
+    width: 42px;
+    height: 42px;
   }
-  .welcome-greeting-title {
-    font-size: 0.92rem;
+  .widget-fab-wa-icon {
+    display: flex;
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 20px;
+    height: 20px;
+    background: #25D366;
+    color: #FFFFFF;
+    border: 2px solid #FFFFFF;
+    border-radius: 50%;
+    padding: 2.5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
   }
-  .welcome-greeting-copy {
-    font-size: 0.72rem;
-    margin-bottom: 2px;
+  .widget-fab-text {
+    display: none;
   }
+  .widget-online-indicator {
+    display: none;
+  }
+  .contact-widget-panel {
+    width: calc(100vw - 28px);
+    max-width: 300px;
+    padding: 14px;
+  }
+}
+
+/* ==========================================================================
+   PWA INSTALLATION PROMPTS & MODAL
+   ========================================================================== */
+.pwa-install-banner {
+  position: fixed;
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  left: 14px;
+  max-width: min(360px, calc(100vw - 80px));
+  background: #FFFFFF;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(213, 173, 103, 0.4);
+  box-shadow: 0 10px 30px rgba(47, 23, 38, 0.16);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 840;
+  animation: slideUpIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pwa-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.pwa-banner-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.pwa-banner-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pwa-banner-text strong {
+  font-size: 0.8rem;
+  color: var(--color-deep-plum);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pwa-banner-text span {
+  font-size: 0.7rem;
+  color: var(--color-muted-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pwa-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.pwa-banner-close {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--color-muted-text);
+  cursor: pointer;
+  padding: 2px 6px;
+  line-height: 1;
+  border-radius: var(--radius-sm);
+}
+
+.pwa-banner-close:hover {
+  color: var(--color-deep-plum);
+}
+
+/* PWA Guide Modal */
+.pwa-guide-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(47, 23, 38, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 2500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md);
+  animation: fadeIn 0.25s ease;
+}
+
+.pwa-guide-card {
+  background: #FFFFFF;
+  border-radius: var(--radius-xl);
+  max-width: 380px;
+  width: 100%;
+  padding: var(--space-xl);
+  box-shadow: 0 20px 50px rgba(47, 23, 38, 0.3);
+  border: 1px solid rgba(213, 173, 103, 0.35);
+  animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pwa-guide-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.pwa-guide-title {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-deep-plum);
+  line-height: 1.2;
+}
+
+.pwa-guide-subtitle {
+  font-size: 0.78rem;
+  color: var(--color-muted-text);
+  margin-top: 2px;
+}
+
+.pwa-guide-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 1rem 0;
+}
+
+.pwa-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 0.85rem;
+  color: var(--color-dark-text);
+  line-height: 1.4;
+}
+
+.pwa-step-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-warm-cream);
+  border: 1px solid var(--color-gold);
+  color: var(--color-deep-plum);
+  font-weight: 700;
+  font-size: 0.78rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pwa-step-icon {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  padding: 2px 6px;
+  background: rgba(68, 36, 56, 0.08);
+  border-radius: 4px;
+  font-weight: 600;
 }
 
 /* ==========================================================================

@@ -116,7 +116,9 @@
     transition: none !important;
   }
 
-  .welcome-card {
+  .welcome-card,
+  .contact-widget-panel,
+  .widget-trigger-fab {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;

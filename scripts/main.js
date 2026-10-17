@@ -19,6 +19,7 @@ import { initWelcomeCard } from './welcome-card.js';
 import { initFirebase } from './firebase-config.js';
 import { initShop } from './shop.js';
 import { getAllPublicSettings, SETTINGS_DEFAULTS } from './settings-service.js';
+import { initPWAInstall } from './pwa-install.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // 1. Navigation (synchronous — no deps)
@@ -66,6 +67,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       .register('./sw.js')
       .catch(() => { /* silent in dev */ });
   }
+
+  // 9. PWA Installation Experience
+  initPWAInstall();
 });
 
 /**
@@ -125,24 +129,36 @@ async function hydrateFromSettings() {
       storyDesc2.textContent = aboutSettings.paragraph2;
     }
 
-    // 4. Welcome Card
+    // 4. Welcome Contact Widget
     const wcSettings = settings.welcomeCard || SETTINGS_DEFAULTS.welcomeCard;
     const welcomeImg = document.getElementById('welcome-avatar-img');
+    const panelImg = document.getElementById('welcome-panel-avatar-img');
     if (welcomeImg && wcSettings.imageUrl) {
       welcomeImg.src = wcSettings.imageUrl;
       if (wcSettings.imageAlt) welcomeImg.alt = wcSettings.imageAlt;
+    }
+    if (panelImg && wcSettings.imageUrl) {
+      panelImg.src = wcSettings.imageUrl;
+      if (wcSettings.imageAlt) panelImg.alt = wcSettings.imageAlt;
     }
     const wcTitle = document.querySelector('.welcome-greeting-title');
     if (wcTitle && wcSettings.heading) wcTitle.textContent = wcSettings.heading;
     const wcCopy = document.querySelector('.welcome-greeting-copy');
     if (wcCopy && wcSettings.body) wcCopy.textContent = wcSettings.body;
     const wcLink = document.querySelector('.welcome-action-link');
-    if (wcLink && wcSettings.linkLabel) wcLink.textContent = wcSettings.linkLabel;
+    if (wcLink && wcSettings.linkLabel) {
+      const linkSpan = wcLink.querySelector('span');
+      if (linkSpan) {
+        linkSpan.textContent = wcSettings.linkLabel;
+      } else {
+        wcLink.textContent = wcSettings.linkLabel;
+      }
+    }
 
-    // Welcome card visibility (enabled:false hides card before it's shown)
+    // Contact widget visibility (enabled:false hides widget)
     if (wcSettings.enabled === false) {
-      const wcCard = document.getElementById('welcome-card');
-      if (wcCard) wcCard.remove();
+      const widget = document.getElementById('floating-contact-widget') || document.getElementById('welcome-card');
+      if (widget) widget.remove();
     }
 
   } catch (err) {

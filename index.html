@@ -76,7 +76,7 @@
           href="https://wa.me/2348143049193?text=Hello%20ZARAFIED,%20I%20would%20like%20to%20make%20an%20enquiry" 
           target="_blank" 
           rel="noopener noreferrer" 
-          class="btn btn-whatsapp btn-sm"
+          class="btn btn-whatsapp btn-sm header-whatsapp-btn"
           aria-label="Chat with ZARAFIED on WhatsApp"
         >
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -138,6 +138,14 @@
         </svg>
         <span>Chat on WhatsApp</span>
       </a>
+      <button 
+        type="button" 
+        class="btn btn-outline btn-sm btn-pwa-install" 
+        id="btn-pwa-install-drawer" 
+        style="width: 100%; margin-top: 0.75rem; display: none;"
+      >
+        <span>📱 Install ZARAFIED App</span>
+      </button>
       <p style="margin-top: 1rem; font-size: 0.8rem; text-align: center; color: var(--color-subtle-text);">
         ZARAFIED STORE &copy; 2026
       </p>
@@ -439,7 +447,6 @@
             <li><a href="#custom-designs" class="footer-link">Custom Designs</a></li>
             <li><a href="#designer-story" class="footer-link">About</a></li>
             <li><a href="#contact" class="footer-link">Contact</a></li>
-            <li><a href="./admin.html" class="footer-link" style="opacity: 0.75; font-size: 0.85rem;">Admin Portal &rarr;</a></li>
           </ul>
         </div>
 
@@ -482,59 +489,149 @@
   </footer>
 
   <!-- ======================================================================
-       WELCOME CARD
-       - Non-blocking dismissible card introducing the owner
-       - Displays actual owner portrait
-       - At most once per session (sessionStorage)
+       FLOATING DRAGGABLE WHATSAPP CONTACT WIDGET
+       - Compact circular trigger button / pill by default (never blocks content)
+       - Smoothly draggable via touch or mouse; stays within viewport
+       - Expands on tap to show friendly greeting & WhatsApp link
        ====================================================================== -->
   <aside 
-    class="welcome-card-wrapper" 
-    aria-label="Welcome notice from the designer"
+    class="floating-contact-widget" 
+    id="floating-contact-widget" 
+    aria-label="WhatsApp Contact Assistant"
   >
-    <div 
-      class="welcome-card" 
-      id="welcome-card" 
-      role="status" 
-      aria-live="polite"
+    <!-- Collapsed Floating Action Button -->
+    <button 
+      type="button" 
+      class="widget-trigger-fab" 
+      id="contact-widget-trigger"
+      aria-expanded="false" 
+      aria-haspopup="dialog"
+      aria-controls="contact-widget-panel"
+      aria-label="Open WhatsApp contact assistant"
+      title="Chat with ZARAFIED on WhatsApp"
     >
-      <div class="welcome-avatar-frame">
+      <span class="widget-fab-avatar">
         <img 
           id="welcome-avatar-img"
           src="./ZARA_ASSETS/owner/owner-portrait-yellow-outfit.jpg" 
-          alt="Creative Director of ZARAFIED in an elegant yellow halter top" 
-          class="welcome-avatar-img"
-          width="60"
-          height="60"
+          alt="Creative Director of ZARAFIED" 
+          class="widget-avatar-img"
+          width="40" 
+          height="40"
+          loading="lazy"
         >
-      </div>
+        <span class="widget-online-indicator" aria-hidden="true"></span>
+      </span>
+      <span class="widget-fab-wa-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" class="widget-wa-svg">
+          <path d="M12.031 2C6.5 2 2 6.5 2 12.031c0 1.954.563 3.774 1.531 5.313L2.25 22l4.813-1.25a10.02 10.02 0 0 0 4.968 1.281h.005c5.531 0 10.031-4.5 10.031-10.031 0-5.531-4.5-10-10.031-10.031zm0 18.375h-.004a8.318 8.318 0 0 1-4.242-1.164l-.305-.18-3.15.825.84-3.07-.199-.316A8.344 8.344 0 0 1 3.687 12.03c0-4.6 3.743-8.344 8.344-8.344 4.6 0 8.344 3.744 8.344 8.344 0 4.6-3.744 8.344-8.344 8.344zm4.57-6.25c-.25-.125-1.477-.73-1.707-.812-.23-.082-.398-.125-.566.125-.168.25-.652.812-.8 1-.148.187-.297.207-.547.082s-1.055-.389-2.01-1.242c-.742-.664-1.242-1.484-1.387-1.734-.144-.25-.015-.386.11-.51.113-.113.25-.293.375-.441.125-.149.168-.25.25-.418.082-.168.043-.312-.02-.437-.063-.125-.567-1.368-.777-1.875-.203-.493-.41-.426-.566-.434l-.485-.008c-.168 0-.441.063-.672.312-.23.25-.883.863-.883 2.105s.902 2.441 1.027 2.61c.125.167 1.777 2.71 4.305 3.8 2.527 1.09 2.527.727 2.984.684.457-.043 1.477-.602 1.684-1.184.207-.582.207-1.082.145-1.183-.063-.102-.23-.164-.48-.29z"/>
+        </svg>
+      </span>
+      <span class="widget-fab-text">Chat with us</span>
+    </button>
 
-      <div class="welcome-text-content">
-        <div class="welcome-greeting-title">Welcome to ZARAFIED</div>
-        <p class="welcome-greeting-copy">
-          Looking for ready-to-wear styles or a custom design? Feel free to reach out anytime.
-        </p>
-        <div class="welcome-actions-row">
-          <a 
-            href="https://wa.me/2348143049193?text=Hello%20ZARAFIED,%20I%20am%20reaching%20out%20from%20the%20website" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            class="welcome-action-link"
+    <!-- Expanded Compact Contact Panel -->
+    <div 
+      class="contact-widget-panel" 
+      id="contact-widget-panel"
+      role="dialog" 
+      aria-label="Welcome to ZARAFIED contact assistant"
+      aria-hidden="true"
+    >
+      <div class="widget-panel-header">
+        <div class="widget-panel-avatar-wrap">
+          <img 
+            id="welcome-panel-avatar-img"
+            src="./ZARA_ASSETS/owner/owner-portrait-yellow-outfit.jpg" 
+            alt="Designer avatar" 
+            class="widget-panel-avatar-img"
+            width="36" 
+            height="36"
+            loading="lazy"
           >
-            Chat on WhatsApp &rarr;
-          </a>
+          <span class="widget-online-indicator" aria-hidden="true"></span>
         </div>
+        <div class="widget-panel-meta">
+          <div class="widget-panel-title welcome-greeting-title">Welcome to ZARAFIED</div>
+          <div class="widget-panel-status">Online &bull; Available to assist you</div>
+        </div>
+        <button 
+          type="button" 
+          class="widget-panel-close-btn welcome-close-btn" 
+          id="contact-widget-close" 
+          aria-label="Close contact assistant"
+        >
+          &times;
+        </button>
       </div>
 
-      <button 
-        type="button" 
-        class="welcome-close-btn" 
-        id="welcome-close-btn" 
-        aria-label="Close welcome note"
-      >
-        &times;
-      </button>
+      <div class="widget-panel-body">
+        <p class="widget-panel-copy welcome-greeting-copy">
+          Looking for a beautiful outfit or custom design? Chat with us.
+        </p>
+        <a 
+          href="https://wa.me/2348143049193?text=Hello%20ZARAFIED,%20I%20would%20like%20to%20make%20an%20enquiry" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          class="widget-panel-wa-btn btn btn-whatsapp btn-sm welcome-action-link"
+          id="contact-widget-wa-link"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" style="width: 18px; height: 18px; fill: currentColor;">
+            <path d="M12.031 2C6.5 2 2 6.5 2 12.031c0 1.954.563 3.774 1.531 5.313L2.25 22l4.813-1.25a10.02 10.02 0 0 0 4.968 1.281h.005c5.531 0 10.031-4.5 10.031-10.031 0-5.531-4.5-10-10.031-10.031zm0 18.375h-.004a8.318 8.318 0 0 1-4.242-1.164l-.305-.18-3.15.825.84-3.07-.199-.316A8.344 8.344 0 0 1 3.687 12.03c0-4.6 3.743-8.344 8.344-8.344 4.6 0 8.344 3.744 8.344 8.344 0 4.6-3.744 8.344-8.344 8.344zm4.57-6.25c-.25-.125-1.477-.73-1.707-.812-.23-.082-.398-.125-.566.125-.168.25-.652.812-.8 1-.148.187-.297.207-.547.082s-1.055-.389-2.01-1.242c-.742-.664-1.242-1.484-1.387-1.734-.144-.25-.015-.386.11-.51.113-.113.25-.293.375-.441.125-.149.168-.25.25-.418.082-.168.043-.312-.02-.437-.063-.125-.567-1.368-.777-1.875-.203-.493-.41-.426-.566-.434l-.485-.008c-.168 0-.441.063-.672.312-.23.25-.883.863-.883 2.105s.902 2.441 1.027 2.61c.125.167 1.777 2.71 4.305 3.8 2.527 1.09 2.527.727 2.984.684.457-.043 1.477-.602 1.684-1.184.207-.582.207-1.082.145-1.183-.063-.102-.23-.164-.48-.29z"/>
+          </svg>
+          <span>Chat on WhatsApp &rarr;</span>
+        </a>
+      </div>
     </div>
   </aside>
+
+  <!-- PWA First-Visit Compact Install Banner -->
+  <aside 
+    class="pwa-install-banner" 
+    id="pwa-install-banner" 
+    role="region" 
+    aria-label="Install ZARAFIED Store App"
+    style="display: none;"
+  >
+    <div class="pwa-banner-content">
+      <img src="./ZARA_ASSETS/brand/zara-logo.png" alt="ZARAFIED App Icon" class="pwa-banner-icon" width="36" height="36">
+      <div class="pwa-banner-text">
+        <strong>Install ZARAFIED App</strong>
+        <span>Shop faster &amp; browse offline anytime</span>
+      </div>
+    </div>
+    <div class="pwa-banner-actions">
+      <button type="button" class="btn btn-primary btn-xs" id="btn-pwa-install-banner">Install</button>
+      <button type="button" class="pwa-banner-close" id="btn-pwa-dismiss-banner" aria-label="Dismiss install banner">&times;</button>
+    </div>
+  </aside>
+
+  <!-- PWA Install Guide Modal (for iOS Safari and unsupported desktop/mobile) -->
+  <div 
+    class="pwa-guide-modal-backdrop" 
+    id="pwa-guide-modal" 
+    aria-hidden="true" 
+    role="dialog" 
+    aria-modal="true"
+    style="display: none;"
+  >
+    <div class="pwa-guide-card">
+      <div class="pwa-guide-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <img src="./ZARA_ASSETS/brand/zara-logo.png" alt="ZARAFIED Logo" width="40" height="40" style="border-radius: 8px; background: #FFFFFF; padding: 2px;">
+          <div>
+            <h3 class="pwa-guide-title">Install ZARAFIED App</h3>
+            <p class="pwa-guide-subtitle" id="pwa-guide-platform-text">Add to your Home Screen</p>
+          </div>
+        </div>
+        <button type="button" class="modal-close-btn" id="btn-pwa-guide-close" aria-label="Close install guide">&times;</button>
+      </div>
+      <div class="pwa-guide-body" id="pwa-guide-steps">
+        <!-- Steps rendered dynamically via pwa-install.js -->
+      </div>
+      <button type="button" class="btn btn-primary btn-sm" id="btn-pwa-guide-done" style="width: 100%; margin-top: 1.25rem;">Got It</button>
+    </div>
+  </div>
 
   <!-- ES Modules Entry Point -->
   <script type="module" src="./scripts/main.js"></script>

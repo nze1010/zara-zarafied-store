@@ -102,7 +102,7 @@
   --z-nav: 100;
   --z-header: 200;
   --z-dropdown: 300;
-  --z-modal-backdrop: 900;
-  --z-welcome-card: 1000;
+  --z-welcome-card: 850;
+  --z-modal-backdrop: 1200;
   --z-skip-link: 2000;
 }

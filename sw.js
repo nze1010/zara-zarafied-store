@@ -3,7 +3,7 @@
  * Lightweight PWA Service Worker
  */
 
-const CACHE_NAME = 'zarafied-v10';
+const CACHE_NAME = 'zarafied-v11';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -18,6 +18,7 @@ const CORE_ASSETS = [
   './scripts/nav.js',
   './scripts/slideshow.js',
   './scripts/welcome-card.js',
+  './scripts/pwa-install.js',
   './scripts/firebase-config.js',
   './scripts/cloudinary.js',
   './scripts/compressor.js',
