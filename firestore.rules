@@ -103,6 +103,23 @@ service cloud.firestore {
     }
 
     // =========================================================================
+    // COLLECTION: analytics_sessions
+    // Purpose: Privacy-conscious, pseudonymous visitor analytics & engagement.
+    // =========================================================================
+    match /analytics_sessions/{sessionId} {
+      // Confidential: only verified store administrator can read analytics reports
+      allow read: if isAdmin();
+      // Public visitors can record/update their own session document
+      allow create, update: if request.resource.data.keys().hasAll(['sessionId', 'visitorId', 'updatedAt'])
+                            && request.resource.data.sessionId is string
+                            && request.resource.data.sessionId == sessionId
+                            && request.resource.data.visitorId is string
+                            && request.resource.data.visitorId.size() <= 80;
+      // Only administrators can purge analytics data
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
     // DEFAULT CATCH-ALL: DENY ALL
     // =========================================================================
     match /{document=**} {

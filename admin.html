@@ -135,6 +135,9 @@
         <button type="button" class="admin-tab" id="tab-gallery" role="tab" aria-selected="false" aria-controls="panel-gallery">
           🎞️ Gallery Settings
         </button>
+        <button type="button" class="admin-tab" id="tab-analytics" role="tab" aria-selected="false" aria-controls="panel-analytics">
+          📊 Site Analytics
+        </button>
       </div>
 
       <!-- ===== TAB PANEL 1: PRODUCTS ===== -->
@@ -431,6 +434,241 @@
         </div>
 
         <div class="admin-alert admin-alert-success" id="gallery-settings-success" style="display:none; margin-top:var(--space-md);">Gallery settings saved.</div>
+      </div>
+
+      <!-- ===== TAB PANEL 5: SITE ANALYTICS ===== -->
+      <div class="admin-tab-panel" id="panel-analytics" role="tabpanel" aria-labelledby="tab-analytics" style="display: none;">
+        <!-- Analytics Toolbar -->
+        <div class="analytics-toolbar">
+          <div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
+              <h2 class="admin-toolbar-title" style="margin-bottom: 0;">Site Metrics &amp; Visitor Analytics</h2>
+              <div class="analytics-live-badge">
+                <span class="analytics-live-dot" aria-hidden="true"></span>
+                <span><strong id="analytics-active-visitors">0</strong> active now (est.)</span>
+              </div>
+            </div>
+            <p style="color: var(--color-muted-text); font-size: var(--text-sm); margin: 0;">
+              Understand customer attention, popular fashion pieces, device preferences, and WhatsApp enquiry conversions.
+            </p>
+          </div>
+
+          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+            <div class="analytics-filters-group" role="group" aria-label="Date range filters">
+              <button type="button" class="analytics-filter-btn" data-range="today">Today</button>
+              <button type="button" class="analytics-filter-btn active" data-range="7days">Last 7 Days</button>
+              <button type="button" class="analytics-filter-btn" data-range="30days">Last 30 Days</button>
+              <button type="button" class="analytics-filter-btn" data-range="custom">Custom Range</button>
+              <button type="button" class="btn btn-outline-sm" id="btn-refresh-analytics" style="margin-left: 6px;">
+                <span>↻</span> Refresh
+              </button>
+            </div>
+
+            <!-- Custom Date Inputs (toggled when Custom Range clicked) -->
+            <div class="analytics-custom-dates-bar" id="analytics-custom-dates-bar">
+              <input type="date" id="analytics-start-date" class="admin-form-input" style="padding: 6px 10px; font-size: var(--text-xs); width: auto;" aria-label="Start date">
+              <span style="font-size: var(--text-xs); color: var(--color-muted-text);">to</span>
+              <input type="date" id="analytics-end-date" class="admin-form-input" style="padding: 6px 10px; font-size: var(--text-xs); width: auto;" aria-label="End date">
+              <button type="button" class="btn btn-primary btn-xs" id="btn-apply-custom-dates">Apply</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metric Summary Cards -->
+        <div class="analytics-stats-grid">
+          <!-- Total Visits -->
+          <div class="admin-stat-card">
+            <div class="admin-stat-label">Total Visits</div>
+            <div class="admin-stat-val" id="metric-total-visits">0</div>
+            <div style="font-size: var(--text-xs); color: var(--color-muted-text); margin-top: 4px;">
+              <span id="metric-page-views">0</span> page views
+            </div>
+            <div class="analytics-delta neutral" id="delta-visits">-- vs previous period</div>
+          </div>
+
+          <!-- Unique Visitors -->
+          <div class="admin-stat-card">
+            <div class="admin-stat-label">Unique Visitors</div>
+            <div class="admin-stat-val" id="metric-unique-visitors">0</div>
+            <div style="font-size: var(--text-xs); color: var(--color-muted-text); margin-top: 4px;">
+              <span id="metric-new-vs-returning">0 new &bull; 0 returning</span>
+            </div>
+            <div class="analytics-delta neutral" id="delta-unique">-- vs previous period</div>
+          </div>
+
+          <!-- Avg Engaged Time -->
+          <div class="admin-stat-card">
+            <div class="admin-stat-label">Avg Engaged Time</div>
+            <div class="admin-stat-val" id="metric-avg-time" style="color: var(--color-berry);">0s</div>
+            <div style="font-size: var(--text-xs); color: var(--color-muted-text); margin-top: 4px;">
+              Active browsing per visit
+            </div>
+            <div class="analytics-delta neutral" id="delta-time">-- vs previous period</div>
+          </div>
+
+          <!-- WhatsApp Enquiries -->
+          <div class="admin-stat-card">
+            <div class="admin-stat-label">WhatsApp Enquiries</div>
+            <div class="admin-stat-val" id="metric-whatsapp-clicks" style="color: #2E7D32;">0</div>
+            <div style="font-size: var(--text-xs); color: var(--color-muted-text); margin-top: 4px;">
+              <span id="metric-conversion-rate">0%</span> visit-to-enquiry rate
+            </div>
+            <div class="analytics-delta neutral" id="delta-enquiries">-- vs previous period</div>
+          </div>
+
+          <!-- Custom Design Requests -->
+          <div class="admin-stat-card">
+            <div class="admin-stat-label">Custom Design Leads</div>
+            <div class="admin-stat-val" id="metric-custom-clicks" style="color: var(--color-coral);">0</div>
+            <div style="font-size: var(--text-xs); color: var(--color-muted-text); margin-top: 4px;">
+              Bespoke tailoring interest
+            </div>
+            <div style="font-size: 0.72rem; color: var(--color-subtle-text); margin-top: 6px;">Initiated on WhatsApp</div>
+          </div>
+        </div>
+
+        <!-- Trend Chart Card -->
+        <div class="analytics-card">
+          <div class="analytics-card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <div>
+              <h3 class="analytics-card-title">📈 Daily Visitor Trend</h3>
+              <p class="analytics-card-subtitle" id="analytics-date-range-label">Showing daily visits and unique visitors</p>
+            </div>
+            <div class="analytics-chart-legend">
+              <div><span class="analytics-legend-dot" style="background: var(--color-deep-plum);"></span>Total Visits</div>
+              <div><span class="analytics-legend-dot" style="background: var(--color-coral);"></span>Unique Visitors</div>
+              <div><span class="analytics-legend-dot" style="background: #2E7D32;"></span>WhatsApp Clicks</div>
+            </div>
+          </div>
+
+          <div class="analytics-chart-container" id="analytics-trend-chart-box">
+            <!-- Dynamic SVG Chart injected by analytics UI -->
+            <div style="height: 100%; display: flex; align-items: center; justify-content: center; color: var(--color-muted-text);">
+              Loading trend chart...
+            </div>
+          </div>
+        </div>
+
+        <!-- Conversion Funnel & Engagement Flow -->
+        <div class="analytics-card">
+          <div class="analytics-card-header">
+            <h3 class="analytics-card-title">🎯 Customer Conversion &amp; Engagement Funnel</h3>
+            <p class="analytics-card-subtitle">
+              Progression from initial visit to opening outfit details and initiating WhatsApp enquiry.
+              <em style="color: var(--color-subtle-text);">(Note: Completed purchases are handled directly on WhatsApp).</em>
+            </p>
+          </div>
+
+          <div class="analytics-funnel-wrapper" id="analytics-funnel-container">
+            <!-- Funnel steps rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Two-Column Breakdown Grid -->
+        <div class="analytics-grid-2col">
+          <!-- Column 1: Devices, Browsers & Traffic Acquisition -->
+          <div>
+            <!-- Device Breakdown -->
+            <div class="analytics-card">
+              <div class="analytics-card-header">
+                <h3 class="analytics-card-title">📱 Device Breakdown</h3>
+                <p class="analytics-card-subtitle">Visitor devices and screen types</p>
+              </div>
+              <div class="analytics-bars-list" id="analytics-devices-list">
+                <!-- Device bars rendered dynamically -->
+              </div>
+            </div>
+
+            <!-- Traffic Sources -->
+            <div class="analytics-card">
+              <div class="analytics-card-header">
+                <h3 class="analytics-card-title">🌐 Traffic Sources &amp; Acquisition</h3>
+                <p class="analytics-card-subtitle">How customers discover the ZARAFIED store</p>
+              </div>
+              <div class="analytics-bars-list" id="analytics-sources-list">
+                <!-- Source bars rendered dynamically -->
+              </div>
+            </div>
+
+            <!-- Browsers & Platforms -->
+            <div class="analytics-card">
+              <div class="analytics-card-header">
+                <h3 class="analytics-card-title">💻 Browsers &amp; Operating Systems</h3>
+                <p class="analytics-card-subtitle">Top client browsers and operating environments</p>
+              </div>
+              <div id="analytics-platforms-list" style="display: flex; flex-direction: column; gap: 8px;">
+                <!-- Platform tags rendered dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 2: Geographic Distribution & Section Engagement -->
+          <div>
+            <!-- Geographic Distribution -->
+            <div class="analytics-card">
+              <div class="analytics-card-header">
+                <h3 class="analytics-card-title">🌍 Geographic Distribution</h3>
+                <p class="analytics-card-subtitle">
+                  Approximate visitor location by country &bull; <span style="color: var(--color-subtle-text);">Derived without GPS</span>
+                </p>
+              </div>
+              <div id="analytics-geo-list">
+                <!-- Geographic list rendered dynamically -->
+              </div>
+            </div>
+
+            <!-- Most Engaged Sections -->
+            <div class="analytics-card">
+              <div class="analytics-card-header">
+                <h3 class="analytics-card-title">⏱️ Section Attention Ranking</h3>
+                <p class="analytics-card-subtitle">Which parts of the website receive the most browsing time</p>
+              </div>
+              <div class="admin-table-wrapper">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Section</th>
+                      <th>Visits</th>
+                      <th>Total Time</th>
+                      <th>Avg / Visit</th>
+                    </tr>
+                  </thead>
+                  <tbody id="analytics-sections-tbody">
+                    <!-- Sections rendered dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Most Viewed Outfits Table -->
+        <div class="analytics-card">
+          <div class="analytics-card-header">
+            <h3 class="analytics-card-title">👗 Most Viewed Fashion Pieces</h3>
+            <p class="analytics-card-subtitle">Outfits attracting the most customer attention and WhatsApp interest</p>
+          </div>
+
+          <div class="admin-table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Outfit Title</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Views</th>
+                  <th>Time Viewed</th>
+                  <th>WhatsApp Enquiries</th>
+                  <th>Enquiry Rate</th>
+                </tr>
+              </thead>
+              <tbody id="analytics-products-tbody">
+                <!-- Products rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
 
     </main>

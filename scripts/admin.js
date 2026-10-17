@@ -31,6 +31,7 @@ import {
   addCustomMediaAsset,
   deleteCustomMediaAsset
 } from './settings-service.js';
+import { getAnalyticsReport, formatDuration } from './analytics-service.js';
 
 let currentUser = null;
 let isVerifiedAdmin = false;
@@ -93,6 +94,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupSettingsHandlers();
   setupGallerySettingsHandlers();
   setupMediaLibraryHandlers();
+  setupAnalyticsTabHandlers();
 });
 
 async function loadAllDashboardData() {
@@ -124,11 +126,13 @@ function setupTabNavigation() {
       const panel = document.getElementById(targetPanelId);
       if (panel) panel.style.display = 'block';
 
-      // Refresh data if switching to media or gallery
+      // Refresh data if switching to media, gallery, or analytics
       if (targetPanelId === 'panel-media') {
         renderMediaLibrary();
       } else if (targetPanelId === 'panel-gallery') {
         loadGalleryPanelData();
+      } else if (targetPanelId === 'panel-analytics') {
+        loadAnalyticsDashboard(currentAnalyticsRange, customStartDate, customEndDate);
       }
     });
   });
@@ -1421,3 +1425,476 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
+
+// =============================================================================
+// SITE ANALYTICS DASHBOARD CONTROLLER
+// =============================================================================
+
+let currentAnalyticsRange = '7days';
+let customStartDate = null;
+let customEndDate = null;
+let isAnalyticsLoading = false;
+
+function setupAnalyticsTabHandlers() {
+  const filterBtns = document.querySelectorAll('.analytics-filter-btn');
+  const customBar = document.getElementById('analytics-custom-dates-bar');
+  const applyCustomBtn = document.getElementById('btn-apply-custom-dates');
+  const refreshBtn = document.getElementById('btn-refresh-analytics');
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const range = btn.dataset.range;
+      currentAnalyticsRange = range;
+
+      if (range === 'custom') {
+        if (customBar) customBar.classList.add('is-visible');
+      } else {
+        if (customBar) customBar.classList.remove('is-visible');
+        loadAnalyticsDashboard(range);
+      }
+    });
+  });
+
+  applyCustomBtn?.addEventListener('click', () => {
+    const startVal = document.getElementById('analytics-start-date')?.value;
+    const endVal = document.getElementById('analytics-end-date')?.value;
+
+    if (!startVal || !endVal) {
+      alert('Please select both a start date and an end date.');
+      return;
+    }
+    if (new Date(startVal) > new Date(endVal)) {
+      alert('Start date cannot be after end date.');
+      return;
+    }
+
+    customStartDate = startVal;
+    customEndDate = endVal;
+    loadAnalyticsDashboard('custom', startVal, endVal);
+  });
+
+  refreshBtn?.addEventListener('click', () => {
+    loadAnalyticsDashboard(currentAnalyticsRange, customStartDate, customEndDate);
+  });
+}
+
+/**
+ * Fetch and render all analytics sections
+ */
+async function loadAnalyticsDashboard(range = '7days', start = null, end = null) {
+  if (isAnalyticsLoading) return;
+  isAnalyticsLoading = true;
+
+  const refreshBtn = document.getElementById('btn-refresh-analytics');
+  if (refreshBtn) refreshBtn.innerHTML = '<span>⏳</span> Loading...';
+
+  try {
+    const report = await getAnalyticsReport(range, start, end);
+    renderAnalyticsReport(report);
+  } catch (err) {
+    console.error('[ZARA Analytics]: Failed to fetch analytics report.', err);
+    showAnalyticsError(err?.message || 'Could not load analytics data. Ensure your connection is active.');
+  } finally {
+    isAnalyticsLoading = false;
+    if (refreshBtn) refreshBtn.innerHTML = '<span>↻</span> Refresh';
+  }
+}
+
+/**
+ * Render all aggregated report components
+ */
+function renderAnalyticsReport(report) {
+  const { current, previous, comparisons, activeVisitorsEstimate, trendData, startDate, endDate, preset } = report;
+
+  // 1. Live Active Visitors (Estimated)
+  const activeEl = document.getElementById('analytics-active-visitors');
+  if (activeEl) activeEl.textContent = activeVisitorsEstimate;
+
+  // 2. Date Subtitle
+  const dateSub = document.getElementById('analytics-date-range-label');
+  if (dateSub) {
+    const startStr = startDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    const endStr = endDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    dateSub.textContent = `${startStr} — ${endStr} (${preset.toUpperCase()})`;
+  }
+
+  // 3. Summary Metric Cards
+  setText('metric-total-visits', current.totalVisits.toLocaleString());
+  setText('metric-page-views', current.pageViews.toLocaleString());
+  setText('metric-unique-visitors', current.uniqueVisitors.toLocaleString());
+  setText('metric-new-vs-returning', `${current.newVisitors} new • ${current.returningVisitors} returning`);
+  setText('metric-avg-time', formatDuration(current.avgEngagedSeconds));
+  setText('metric-whatsapp-clicks', current.whatsappClicks.toLocaleString());
+  setText('metric-conversion-rate', `${current.conversionRate}%`);
+  setText('metric-custom-clicks', current.customDesignClicks.toLocaleString());
+
+  // Comparisons badges
+  setDeltaUI('delta-visits', comparisons.visits);
+  setDeltaUI('delta-unique', comparisons.unique);
+  setDeltaUI('delta-time', comparisons.engagedTime);
+  setDeltaUI('delta-enquiries', comparisons.enquiries);
+
+  // 4. Daily Visitor Trend Chart (SVG)
+  renderTrendSvgChart(trendData);
+
+  // 5. Conversion Funnel
+  renderConversionFunnel(current.funnel);
+
+  // 6. Device Breakdown
+  renderDeviceBreakdown(current.devices, current.totalVisits);
+
+  // 7. Traffic Sources
+  renderTrafficSources(current.trafficSources, current.referrers, current.totalVisits);
+
+  // 8. Browsers & Operating Systems
+  renderPlatforms(current.browsers, current.os);
+
+  // 9. Geographic Distribution
+  renderGeographicDistribution(current.countries, current.totalVisits);
+
+  // 10. Most Engaged Sections
+  renderSectionsTable(current.sections);
+
+  // 11. Most Viewed Outfits
+  renderAnalyticsProductsTable(current.products);
+}
+
+function setText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+function setDeltaUI(id, delta) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (!delta.hasData) {
+    el.className = 'analytics-delta neutral';
+    el.textContent = 'No previous data';
+    return;
+  }
+  el.className = `analytics-delta ${delta.direction}`;
+  el.textContent = `${delta.text} vs prior period`;
+}
+
+/**
+ * Render responsive SVG trend chart
+ */
+function renderTrendSvgChart(trendData) {
+  const container = document.getElementById('analytics-trend-chart-box');
+  if (!container) return;
+
+  if (!trendData || trendData.length === 0) {
+    container.innerHTML = `
+      <div class="analytics-empty-state">
+        <div class="analytics-empty-icon">📊</div>
+        <div class="analytics-empty-title">No Visitor Activity Recorded</div>
+        <p class="analytics-empty-desc">No sessions occurred during this timeframe. New visits will automatically chart here.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const maxVal = Math.max(4, ...trendData.map(d => Math.max(d.visits, d.unique, d.whatsappClicks)));
+  const width = 640;
+  const height = 200;
+  const padLeft = 40;
+  const padRight = 20;
+  const padTop = 20;
+  const padBottom = 30;
+
+  const chartW = width - padLeft - padRight;
+  const chartH = height - padTop - padBottom;
+
+  const stepX = trendData.length > 1 ? chartW / (trendData.length - 1) : chartW / 2;
+
+  const getY = (val) => padTop + chartH - (val / maxVal) * chartH;
+  const getX = (idx) => trendData.length === 1 ? padLeft + chartW / 2 : padLeft + idx * stepX;
+
+  // Build visit line & area
+  const visitsPoints = trendData.map((d, i) => `${getX(i)},${getY(d.visits)}`).join(' ');
+  const uniquePoints = trendData.map((d, i) => `${getX(i)},${getY(d.unique)}`).join(' ');
+  const waPoints = trendData.map((d, i) => `${getX(i)},${getY(d.whatsappClicks)}`).join(' ');
+
+  const areaPoints = `${getX(0)},${padTop + chartH} ` + visitsPoints + ` ${getX(trendData.length - 1)},${padTop + chartH}`;
+
+  // Gridlines
+  const yTicks = [0, Math.round(maxVal / 2), maxVal];
+  const gridLines = yTicks.map(val => {
+    const y = getY(val);
+    return `
+      <line x1="${padLeft}" y1="${y}" x2="${width - padRight}" y2="${y}" stroke="rgba(68,36,56,0.08)" stroke-dasharray="3 3" />
+      <text x="${padLeft - 8}" y="${y + 4}" font-size="10" fill="#827680" text-anchor="end">${val}</text>
+    `;
+  }).join('');
+
+  // X Axis labels
+  const labelStep = Math.max(1, Math.floor(trendData.length / 7));
+  const xLabels = trendData.map((d, i) => {
+    if (i % labelStep === 0 || i === trendData.length - 1) {
+      return `<text x="${getX(i)}" y="${height - 6}" font-size="10" fill="#827680" text-anchor="middle">${d.label}</text>`;
+    }
+    return '';
+  }).join('');
+
+  // Circles
+  const circles = trendData.map((d, i) => `
+    <circle cx="${getX(i)}" cy="${getY(d.visits)}" r="4" fill="#442438">
+      <title>${d.label}: ${d.visits} visits</title>
+    </circle>
+    <circle cx="${getX(i)}" cy="${getY(d.unique)}" r="3" fill="#F17B70">
+      <title>${d.label}: ${d.unique} unique visitors</title>
+    </circle>
+  `).join('');
+
+  container.innerHTML = `
+    <svg viewBox="0 0 ${width} ${height}" class="analytics-chart-svg" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="trendAreaGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#442438" stop-opacity="0.22" />
+          <stop offset="100%" stop-color="#442438" stop-opacity="0.0" />
+        </linearGradient>
+      </defs>
+      ${gridLines}
+      <polygon points="${areaPoints}" fill="url(#trendAreaGrad)" />
+      <polyline points="${visitsPoints}" fill="none" stroke="#442438" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+      <polyline points="${uniquePoints}" fill="none" stroke="#F17B70" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 3" />
+      <polyline points="${waPoints}" fill="none" stroke="#2E7D32" stroke-width="1.8" stroke-linecap="round" />
+      ${circles}
+      ${xLabels}
+    </svg>
+  `;
+}
+
+/**
+ * Render conversion funnel
+ */
+function renderConversionFunnel(funnel) {
+  const container = document.getElementById('analytics-funnel-container');
+  if (!container) return;
+
+  const base = Math.max(1, funnel.visits);
+  const steps = [
+    { title: '1. Total Website Visits', count: funnel.visits, pct: 100 },
+    { title: '2. Sections Explored (Hero, Gallery, Shop)', count: funnel.sectionsExplored, pct: Math.round((funnel.sectionsExplored / base) * 100) },
+    { title: '3. Outfits Viewed in Modal Details', count: funnel.productsViewed, pct: Math.round((funnel.productsViewed / base) * 100) },
+    { title: '4. Initiated WhatsApp Enquiry / Order', count: funnel.enquiries, pct: Math.round((funnel.enquiries / base) * 100) }
+  ];
+
+  container.innerHTML = steps.map(s => `
+    <div class="funnel-step">
+      <div class="funnel-step-bar" style="width: ${s.pct}%;"></div>
+      <div class="funnel-step-content">
+        <span class="funnel-step-title">${s.title}</span>
+        <div>
+          <span class="funnel-step-numbers">${s.count}</span>
+          <span class="funnel-step-pct">(${s.pct}%)</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/**
+ * Render device breakdown
+ */
+function renderDeviceBreakdown(devices, total) {
+  const container = document.getElementById('analytics-devices-list');
+  if (!container) return;
+
+  const base = Math.max(1, total);
+  const items = [
+    { label: '📱 Mobile Phone', count: devices.mobile || 0, class: 'accent-berry' },
+    { label: '💻 Desktop Computer', count: devices.desktop || 0, class: 'accent-coral' },
+    { label: '📟 Tablet', count: devices.tablet || 0, class: 'accent-gold' }
+  ];
+
+  container.innerHTML = items.map(item => {
+    const pct = Math.round((item.count / base) * 100);
+    return `
+      <div class="analytics-bar-item">
+        <div class="analytics-bar-labels">
+          <span>${item.label}</span>
+          <span>${item.count} (${pct}%)</span>
+        </div>
+        <div class="analytics-bar-track">
+          <div class="analytics-bar-fill ${item.class}" style="width: ${pct}%;"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/**
+ * Render traffic sources
+ */
+function renderTrafficSources(sources, referrers, total) {
+  const container = document.getElementById('analytics-sources-list');
+  if (!container) return;
+
+  const base = Math.max(1, total);
+  const items = [
+    { label: 'Direct / Bookmarks', count: sources.direct || 0, class: '' },
+    { label: 'Social Media (Instagram, WhatsApp, TikTok)', count: sources.social || 0, class: 'accent-berry' },
+    { label: 'Search Engines (Google, Bing)', count: sources.search || 0, class: 'accent-coral' },
+    { label: 'Referring Websites', count: sources.referral || 0, class: 'accent-gold' }
+  ];
+
+  container.innerHTML = items.map(item => {
+    const pct = Math.round((item.count / base) * 100);
+    return `
+      <div class="analytics-bar-item">
+        <div class="analytics-bar-labels">
+          <span>${item.label}</span>
+          <span>${item.count} (${pct}%)</span>
+        </div>
+        <div class="analytics-bar-track">
+          <div class="analytics-bar-fill ${item.class}" style="width: ${pct}%;"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/**
+ * Render browsers and platforms
+ */
+function renderPlatforms(browsers, os) {
+  const container = document.getElementById('analytics-platforms-list');
+  if (!container) return;
+
+  const topBrowsers = Object.entries(browsers).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const topOS = Object.entries(os).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  container.innerHTML = `
+    <div>
+      <div style="font-size: var(--text-xs); font-weight:700; color:var(--color-deep-plum); margin-bottom: 6px;">Top Browsers:</div>
+      <div style="display:flex; flex-wrap:wrap; gap:6px;">
+        ${topBrowsers.length ? topBrowsers.map(([b, count]) => `<span class="badge" style="background:#FAF6F3; border:1px solid rgba(68,36,56,0.12); color:var(--color-deep-plum);">${escapeHtml(b)}: ${count}</span>`).join('') : '<span style="color:var(--color-muted-text); font-size:var(--text-xs);">No browser data</span>'}
+      </div>
+    </div>
+    <div style="margin-top:8px;">
+      <div style="font-size: var(--text-xs); font-weight:700; color:var(--color-deep-plum); margin-bottom: 6px;">Operating Systems:</div>
+      <div style="display:flex; flex-wrap:wrap; gap:6px;">
+        ${topOS.length ? topOS.map(([o, count]) => `<span class="badge" style="background:#FAF6F3; border:1px solid rgba(68,36,56,0.12); color:var(--color-deep-plum);">${escapeHtml(o)}: ${count}</span>`).join('') : '<span style="color:var(--color-muted-text); font-size:var(--text-xs);">No OS data</span>'}
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Render approximate geographic distribution
+ */
+function renderGeographicDistribution(countries, total) {
+  const container = document.getElementById('analytics-geo-list');
+  if (!container) return;
+
+  const entries = Object.entries(countries).sort((a, b) => b[1] - a[1]);
+  if (!entries.length) {
+    container.innerHTML = '<p style="color: var(--color-muted-text); font-size: var(--text-sm);">No geographic data recorded yet.</p>';
+    return;
+  }
+
+  const base = Math.max(1, total);
+  container.innerHTML = `
+    <div class="analytics-bars-list">
+      ${entries.map(([ctry, count]) => {
+        const pct = Math.round((count / base) * 100);
+        return `
+          <div class="analytics-bar-item">
+            <div class="analytics-bar-labels">
+              <span>📍 ${escapeHtml(ctry)}</span>
+              <span>${count} visitors (${pct}%)</span>
+            </div>
+            <div class="analytics-bar-track">
+              <div class="analytics-bar-fill accent-gold" style="width: ${pct}%;"></div>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+/**
+ * Render section engagement ranking table
+ */
+function renderSectionsTable(sections) {
+  const tbody = document.getElementById('analytics-sections-tbody');
+  if (!tbody) return;
+
+  const sorted = Object.values(sections).sort((a, b) => b.engagedSeconds - a.engagedSeconds);
+
+  if (!sorted.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4" style="text-align: center; color: var(--color-muted-text); padding: 24px;">
+          No section engagement recorded yet.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = sorted.map(sec => {
+    const avgSec = sec.views > 0 ? Math.round(sec.engagedSeconds / sec.views) : 0;
+    return `
+      <tr>
+        <td style="font-weight: 600; color: var(--color-deep-plum);">${escapeHtml(sec.name)}</td>
+        <td>${sec.views}</td>
+        <td>${formatDuration(sec.engagedSeconds)}</td>
+        <td style="color: var(--color-berry); font-weight: 600;">${formatDuration(avgSec)}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+/**
+ * Render most viewed outfits table
+ */
+function renderAnalyticsProductsTable(products) {
+  const tbody = document.getElementById('analytics-products-tbody');
+  if (!tbody) return;
+
+  const sorted = Object.values(products).sort((a, b) => b.views - a.views);
+
+  if (!sorted.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" style="text-align: center; color: var(--color-muted-text); padding: 32px;">
+          No product views recorded yet. Browsing outfits in the shop will record views and WhatsApp enquiries here.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = sorted.map(prod => {
+    const conversion = prod.views > 0 ? Math.round((prod.whatsappClicks / prod.views) * 1000) / 10 : 0;
+    return `
+      <tr>
+        <td style="font-weight: 600; color: var(--color-deep-plum);">${escapeHtml(prod.title)}</td>
+        <td><span class="badge badge-coral">${escapeHtml(prod.category)}</span></td>
+        <td>₦${Number(prod.price || 0).toLocaleString()}</td>
+        <td style="font-weight: 700;">${prod.views}</td>
+        <td>${formatDuration(prod.engagedSeconds)}</td>
+        <td style="color: #2E7D32; font-weight: 700;">${prod.whatsappClicks}</td>
+        <td style="font-weight: 600; color: ${conversion > 0 ? '#2E7D32' : 'var(--color-muted-text)'};">${conversion}%</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function showAnalyticsError(msg) {
+  const container = document.getElementById('analytics-trend-chart-box');
+  if (container) {
+    container.innerHTML = `
+      <div class="admin-alert admin-alert-error" style="margin: 20px;">
+        <strong>Analytics Error:</strong> ${escapeHtml(msg)}
+      </div>
+    `;
+  }
+}
+

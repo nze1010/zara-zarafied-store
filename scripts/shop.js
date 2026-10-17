@@ -105,6 +105,7 @@ function setupFilterListeners() {
       pill.setAttribute('aria-selected', 'true');
 
       activeCategory = pill.dataset.category || 'all';
+      window.__ZARA_ANALYTICS__?.recordEvent('category_filter', { category: activeCategory });
       // Fast in-memory render without flashing skeletons
       await loadAndRenderProducts(false);
     });
@@ -419,12 +420,21 @@ function openModal(productId) {
     }
 
     const whatsappUrl = `https://wa.me/2348143049193?text=${encodeURIComponent(message)}`;
+    window.__ZARA_ANALYTICS__?.recordEvent('whatsapp_click', {
+      source: 'product_modal',
+      productId: product.id,
+      title: product.title,
+      price: product.price,
+      selectedSize: selectedSize || 'Unspecified',
+      isOutOfStock
+    });
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   });
 
   modal.classList.add('is-open');
   modal.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
+  window.__ZARA_ANALYTICS__?.startProductView(product);
 }
 
 /**
@@ -436,6 +446,7 @@ function closeModal() {
   modal.classList.remove('is-open');
   modal.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
+  window.__ZARA_ANALYTICS__?.endProductView();
 }
 
 /**

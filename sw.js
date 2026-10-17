@@ -10,7 +10,7 @@
  * 5. Update Lifecycle: Controlled activation via SKIP_WAITING message and clean client notification.
  */
 
-const SHELL_CACHE_NAME = 'zarafied-shell-v13';
+const SHELL_CACHE_NAME = 'zarafied-shell-v14';
 const IMAGE_CACHE_NAME = 'zarafied-images-v1';
 const MAX_CACHED_IMAGES = 60;
 
@@ -38,6 +38,8 @@ const CORE_SHELL_ASSETS = [
   './scripts/settings-service.js',
   './scripts/shop.js',
   './scripts/admin.js',
+  './scripts/analytics-tracker.js',
+  './scripts/analytics-service.js',
   './ZARA_ASSETS/brand/zara-logo.png',
   './ZARA_ASSETS/owner/owner-portrait-pink-outfit.jpg',
   './ZARA_ASSETS/owner/owner-portrait-yellow-outfit.jpg'

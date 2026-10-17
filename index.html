@@ -36,15 +36,15 @@
   <link rel="stylesheet" href="./styles/components.css">
   <link rel="stylesheet" href="./styles/animations.css">
 
-  <!-- Service Worker Cache Migration Helper (Purges stale pre-v13 caches) -->
+  <!-- Service Worker Cache Migration Helper (Purges stale pre-v14 caches) -->
   <script>
-    if ('caches' in window && !sessionStorage.getItem('zara_sw_purged_v13')) {
+    if ('caches' in window && !sessionStorage.getItem('zara_sw_purged_v14')) {
       caches.keys().then(function(keys) {
         var obsolete = keys.filter(function(k) {
-          return k.startsWith('zarafied-') && !k.includes('v13') && !k.includes('images-v1');
+          return k.startsWith('zarafied-') && !k.includes('v14') && !k.includes('images-v1');
         });
         if (obsolete.length > 0) {
-          sessionStorage.setItem('zara_sw_purged_v13', '1');
+          sessionStorage.setItem('zara_sw_purged_v14', '1');
           Promise.all(obsolete.map(function(k) { return caches.delete(k); })).then(function() {
             if (navigator.serviceWorker && navigator.serviceWorker.controller) {
               navigator.serviceWorker.getRegistrations().then(function(regs) {
@@ -479,6 +479,7 @@
             <li><a href="#custom-designs" class="footer-link">Custom Designs</a></li>
             <li><a href="#designer-story" class="footer-link">About</a></li>
             <li><a href="#contact" class="footer-link">Contact</a></li>
+            <li><button type="button" class="footer-link" id="btn-privacy-nav" style="background:none;border:none;padding:0;cursor:pointer;font:inherit;text-align:left;">Privacy & Analytics</button></li>
           </ul>
         </div>
 
@@ -511,7 +512,7 @@
       <!-- Footer Bottom -->
       <div class="footer-bottom">
         <div>
-          &copy; 2026 ZARA — ZARAFIED STORE. All rights reserved.
+          &copy; 2026 ZARA — ZARAFIED STORE. All rights reserved. &bull; <button type="button" id="btn-privacy-bottom" style="background:none;border:none;padding:0;cursor:pointer;font:inherit;color:inherit;text-decoration:underline;">Privacy &amp; Analytics Notice</button>
         </div>
         <div>
           <span>Wear your story.</span>
@@ -664,6 +665,76 @@
         <!-- Steps rendered dynamically via pwa-install.js -->
       </div>
       <button type="button" class="btn btn-primary btn-sm" id="btn-pwa-guide-done" style="width: 100%; margin-top: 1.25rem;">Got It</button>
+    </div>
+  </div>
+
+  <!-- Privacy & Analytics Notice Modal -->
+  <div 
+    class="pwa-guide-modal-backdrop" 
+    id="privacy-notice-modal" 
+    aria-hidden="true" 
+    role="dialog" 
+    aria-modal="true"
+    style="display: none;"
+  >
+    <div class="pwa-guide-card" style="max-width: 520px; text-align: left;">
+      <div class="pwa-guide-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <img src="./ZARA_ASSETS/brand/zara-logo.png" alt="ZARAFIED Logo" width="36" height="36" style="border-radius: 8px; background: #FFFFFF; padding: 2px;">
+          <div>
+            <h3 class="pwa-guide-title" style="font-size: var(--text-lg);">Privacy &amp; Analytics Notice</h3>
+            <p class="pwa-guide-subtitle">How ZARAFIED collects and protects data</p>
+          </div>
+        </div>
+        <button type="button" class="modal-close-btn" id="btn-privacy-modal-close" aria-label="Close privacy notice">&times;</button>
+      </div>
+
+      <div class="pwa-guide-body" style="font-size: 0.85rem; line-height: 1.6; color: var(--color-muted-text); max-height: 60vh; overflow-y: auto; padding-right: 4px;">
+        <p style="margin-bottom: 0.75rem;">
+          At <strong>ZARAFIED STORE</strong>, we respect your privacy and are committed to protecting your personal information.
+        </p>
+
+        <h4 style="color: var(--color-deep-plum); font-size: 0.95rem; margin: 1rem 0 0.35rem;">1. What Analytics We Collect</h4>
+        <p style="margin-bottom: 0.75rem;">
+          To understand which outfits attract interest and ensure fast loading across mobile connections, we measure anonymous website interactions:
+        </p>
+        <ul style="padding-left: 1.25rem; margin-bottom: 0.75rem;">
+          <li>Page views and time spent exploring collections.</li>
+          <li>Outfits viewed in product details and WhatsApp enquiry clicks.</li>
+          <li>Device category (mobile, desktop, tablet), browser, and operating system.</li>
+          <li>Approximate country or region derived from general network routing (clearly approximate).</li>
+        </ul>
+
+        <h4 style="color: var(--color-deep-plum); font-size: 0.95rem; margin: 1rem 0 0.35rem;">2. What We Never Collect</h4>
+        <ul style="padding-left: 1.25rem; margin-bottom: 0.75rem;">
+          <li>We <strong>never</strong> access your device GPS or precise street address.</li>
+          <li>We <strong>never</strong> store full IP addresses in our database.</li>
+          <li>We <strong>never</strong> access your WhatsApp chat messages or private conversations.</li>
+          <li>We <strong>never</strong> sell or share your browsing activity with third-party advertisers.</li>
+        </ul>
+
+        <h4 style="color: var(--color-deep-plum); font-size: 0.95rem; margin: 1rem 0 0.35rem;">3. Pseudonymous Identifiers</h4>
+        <p style="margin-bottom: 0.75rem;">
+          A random pseudonymous identifier is stored locally on your device to count unique visits. It contains no name, email, or telephone number.
+        </p>
+
+        <h4 style="color: var(--color-deep-plum); font-size: 0.95rem; margin: 1rem 0 0.35rem;">4. Your Choices &amp; Opt-Out</h4>
+        <p style="margin-bottom: 0.75rem;">
+          You can clear your browser cookies or storage at any time. We also respect the browser <em>Global Privacy Control (GPC)</em> signal automatically.
+        </p>
+
+        <div style="background: var(--color-bg-primary); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--color-border); margin-top: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600; color: var(--color-deep-plum);">Analytics Preference</span>
+            <button type="button" class="btn btn-outline btn-xs" id="btn-toggle-optout">Disable Analytics</button>
+          </div>
+          <p id="optout-status-text" style="font-size: 0.75rem; margin-top: 4px; color: var(--color-subtle-text);">
+            Analytics collection is currently active for this browser.
+          </p>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-primary btn-sm" id="btn-privacy-modal-done" style="width: 100%; margin-top: 1.25rem;">Understood</button>
     </div>
   </div>
 

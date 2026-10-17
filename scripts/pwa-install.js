@@ -62,6 +62,7 @@ export function initPWAInstall() {
       setTimeout(() => {
         if (banner && shouldShowBanner()) {
           banner.style.display = 'flex';
+          window.__ZARA_ANALYTICS__?.recordEvent('pwa_install_prompt', { platform: 'native' });
         }
       }, 3500);
     }
@@ -110,6 +111,7 @@ export function initPWAInstall() {
   window.addEventListener('appinstalled', () => {
     deferredPrompt = null;
     markInstalled();
+    window.__ZARA_ANALYTICS__?.recordEvent('pwa_install_accepted');
     if (banner) banner.style.display = 'none';
     if (drawerBtn) drawerBtn.style.display = 'none';
     closeGuide();

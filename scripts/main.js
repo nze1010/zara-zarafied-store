@@ -21,6 +21,7 @@ import { initShop } from './shop.js';
 import { getAllPublicSettings, SETTINGS_DEFAULTS } from './settings-service.js';
 import { initPWAInstall } from './pwa-install.js';
 import { buildOptimizedImageUrl } from './cloudinary.js?v=2';
+import { analyticsTracker } from './analytics-tracker.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // 1. Navigation (synchronous — no deps)
@@ -69,7 +70,56 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 9. PWA Installation Experience
   initPWAInstall();
+
+  // 10. Privacy-Conscious Visitor Analytics
+  analyticsTracker.init();
+  setupAnalyticsClickListeners();
+  initPrivacyNoticeModal();
 });
+
+/**
+ * Global click attribution for WhatsApp and contact conversions
+ */
+function setupAnalyticsClickListeners() {
+  document.addEventListener('click', (event) => {
+    const target = event.target.closest('a, button');
+    if (!target) return;
+
+    const href = target.getAttribute('href') || '';
+    const id = target.id || '';
+
+    // WhatsApp link clicks
+    if (href.includes('wa.me') || href.includes('whatsapp.com')) {
+      let source = 'general_link';
+      if (target.classList.contains('header-whatsapp-btn')) source = 'header';
+      else if (target.closest('.mobile-nav-drawer')) source = 'mobile_drawer';
+      else if (target.closest('#contact')) source = 'contact_section';
+      else if (target.closest('.site-footer')) source = 'footer';
+      else if (target.closest('#custom-designs')) source = 'custom_designs_section';
+      else if (target.closest('#floating-contact-widget') || target.closest('#contact-widget-panel')) source = 'floating_widget';
+
+      analyticsTracker.recordEvent('whatsapp_click', {
+        source,
+        targetHref: href.slice(0, 80)
+      });
+    }
+
+    // Custom Design enquiry buttons
+    if (href.includes('custom%20design') || href.includes('custom-designs') || id === 'btn-custom-design') {
+      analyticsTracker.recordEvent('custom_design_enquiry', {
+        source: id || 'custom_design_link'
+      });
+    }
+
+    // Email link clicks
+    if (href.startsWith('mailto:')) {
+      analyticsTracker.recordEvent('contact_click', {
+        type: 'email',
+        address: href.replace('mailto:', '')
+      });
+    }
+  }, { passive: true });
+}
 
 /**
  * Handle Service Worker lifecycle, update notifications, and clean reload
@@ -234,4 +284,63 @@ async function hydrateFromSettings() {
     // Settings hydration is optional — never disrupt user experience
     console.info('[ZARAFIED]: Using static defaults (settings hydration unavailable).', err?.message);
   }
+}
+
+/**
+ * Privacy & Analytics Notice Modal logic
+ */
+function initPrivacyNoticeModal() {
+  const modal = document.getElementById('privacy-notice-modal');
+  const openNavBtn = document.getElementById('btn-privacy-nav');
+  const openBottomBtn = document.getElementById('btn-privacy-bottom');
+  const closeBtn = document.getElementById('btn-privacy-modal-close');
+  const doneBtn = document.getElementById('btn-privacy-modal-done');
+  const toggleOptoutBtn = document.getElementById('btn-toggle-optout');
+  const statusText = document.getElementById('optout-status-text');
+
+  if (!modal) return;
+
+  const updateOptoutUI = () => {
+    const isOptedOut = localStorage.getItem('zara_analytics_optout') === 'true';
+    if (toggleOptoutBtn) {
+      toggleOptoutBtn.textContent = isOptedOut ? 'Enable Analytics' : 'Disable Analytics';
+    }
+    if (statusText) {
+      statusText.textContent = isOptedOut
+        ? 'Analytics tracking is currently disabled for this browser.'
+        : 'Analytics collection is currently active for this browser.';
+    }
+  };
+
+  const openModal = () => {
+    modal.style.display = 'flex';
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    updateOptoutUI();
+  };
+
+  const closeModal = () => {
+    modal.style.display = 'none';
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  };
+
+  openNavBtn?.addEventListener('click', openModal);
+  openBottomBtn?.addEventListener('click', openModal);
+  closeBtn?.addEventListener('click', closeModal);
+  doneBtn?.addEventListener('click', closeModal);
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  toggleOptoutBtn?.addEventListener('click', () => {
+    const isCurrentlyOptedOut = localStorage.getItem('zara_analytics_optout') === 'true';
+    if (isCurrentlyOptedOut) {
+      localStorage.removeItem('zara_analytics_optout');
+    } else {
+      localStorage.setItem('zara_analytics_optout', 'true');
+    }
+    updateOptoutUI();
+  });
 }
